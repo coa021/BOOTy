@@ -3,7 +3,7 @@
 
 #include "app_header.h"
 
-/* 
+/*
 Now regarding sectors of the main memory, this is how it looks like
 Sector 0 0x0800 0000 - 0x0800 3FFF 16 Kbytes
 Sector 1 0x0800 4000 - 0x0800 7FFF 16 Kbytes
@@ -14,12 +14,12 @@ Sector 5 0x0802 0000 - 0x0803 FFFF 128 Kbytes
 Sector 6 0x0804 0000 - 0x0805 FFFF 128 Kbytes
 Sector 7 0x0806 0000 - 0x0807 FFFF 128 Kbytes
 
-
 Lets say sector 0 will be bootloader
 sector 1 will be app header
 sector 2-5 will be main app
 sector 6-7 will be where i store OTA updated firmware
-TODO: A bit illogical, update space is larger than main app state but this is just an example
+TODO: A bit illogical, update space is larger than main app state but this is
+just an example
  */
 /* idk if what im doing is right lol
 TODO: Check on this logic */
@@ -41,10 +41,14 @@ TODO: Check on this logic */
 
 /* sector 1 */
 #define APP_HEADER_ADDR         0x08004000U
+/* TODO: I dont need this sector now */
 #define APP_HEADER_SECTOR       FLASH_SECTOR_1_START
 
 /* sector 2-5 */
+/* header size is 1024B, or 1KB, which is enough i guess */
+/* Ill stick with giving it 16KB will change later */
 #define APP_START_ADDR          0x08008000U
+/* TODO: Fix shit below */
 #define APP_START_SECTOR        FLASH_SECTOR_2_START
 #define APP_MAX_SIZE            (FLASH_SECTOR_6_START - FLASH_SECTOR_2_START)
 

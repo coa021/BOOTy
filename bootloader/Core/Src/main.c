@@ -108,8 +108,15 @@ int main(void)
 
     while (1) {
       HAL_GPIO_TogglePin(LED_INDICATOR_GPIO_Port, LED_INDICATOR_Pin);
-      HAL_Delay(100);
+      HAL_Delay(2000);
     }
+  }
+
+  volatile int cnt = 0;
+  while (cnt <= 10) {
+    HAL_GPIO_TogglePin(LED_INDICATOR_GPIO_Port, LED_INDICATOR_Pin);
+    HAL_Delay(500);
+    cnt++;
   }
 
   log("BOOTy: Application validated successfully, jumping to app\r\n");

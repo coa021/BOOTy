@@ -7,22 +7,21 @@
 
 enum verify_result_t bl_verify_app(void)
 {
-    const struct app_header_t *app_header = (const struct app_header_t*)APP_HEADER_ADDR;
+  const struct app_header_t *app_header =
+      (const struct app_header_t *)APP_HEADER_ADDR;
 
-    /* Checking magic constant */
-    if(app_header->magic != APP_MAGIC_CONSTANT) 
-    {
-        return VERIFY_BAD_MAGIC;    
-    }
+  /* Checking magic constant */
+  if (app_header->magic != APP_MAGIC_CONSTANT) {
+    return VERIFY_BAD_MAGIC;
+  }
 
-    /* Check firmware size */
-    if(app_header->size == 0 || app_header->size > APP_MAX_SIZE)
-    {
-        return VERIFY_BAD_SIZE;
-    }
+  /* Check firmware size */
+  if (app_header->size == 0 || app_header->size > APP_MAX_SIZE) {
+    return VERIFY_BAD_SIZE;
+  }
 
-    /* TODO: For later add anti rollback guard */
-    /* TODO: add sha256 and signature checks */
+  /* TODO: For later add anti rollback guard */
+  /* TODO: add sha256 and signature checks */
 
-    return VERIFY_OK;
+  return VERIFY_OK;
 }
