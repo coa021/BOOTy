@@ -53,4 +53,8 @@ TODO: Check on this logic */
 #define OTA_UPDATE_START_SECTOR FLASH_SECTOR_6_START
 #define OTA_UPDATE_MAX_SIZE     (FLASH_SECTOR_7_END - FLASH_SECTOR_6_START)
 
+/* first 4 bytes are initial stack pointer, i need reset handler which comes
+ * after that */
+#define APP_RESET_HANDLER_ADDRESS (APP_START_ADDR + 4U)
+
 #endif
