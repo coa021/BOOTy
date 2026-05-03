@@ -20,4 +20,9 @@ enum verify_result_t bl_verify_app(void)
     {
         return VERIFY_BAD_SIZE;
     }
+
+    /* TODO: For later add anti rollback guard */
+    /* TODO: add sha256 and signature checks */
+
+    return VERIFY_OK;
 }
