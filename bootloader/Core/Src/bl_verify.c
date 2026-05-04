@@ -1,5 +1,9 @@
 #include "bl_verify.h"
+#include "main.h"
+#include <string.h>
+#include <stdio.h>
 
+extern UART_HandleTypeDef huart1;
 
 /* TODO: For later usage. This will be version 1.0, first 4 bits are major version, second 4 are minor version. Will see how can i implement anti rollback for this one */
 #define MIN_VERSION 0x00010000U
@@ -25,6 +29,11 @@ enum verify_result_t bl_verify_app(void)
     we are doing our own crc calculation and comparing it to app header's crc
   */
 
+/* 
+  char msg[100];
+  snprintf(msg, 100, "Crc: %d", crc);
+  HAL_UART_Transmit(&huart1, (uint8_t *)msg, (uint16_t)strlen(msg), 100);
+ */
   /* TODO: For later add anti rollback guard */
   /* TODO: add sha256 and signature checks */
 
