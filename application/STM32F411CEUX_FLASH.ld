@@ -32,6 +32,8 @@
 ******************************************************************************
 */
 
+INCLUDE memory_map.ld
+
 /* Entry Point */
 ENTRY(Reset_Handler)
 
@@ -45,7 +47,8 @@ _Min_Stack_Size = 0x400; /* required amount of stack */
 MEMORY
 {
   RAM    (xrw)    : ORIGIN = 0x20000000,   LENGTH = 128K
-  FLASH    (rx)    : ORIGIN = 0x8000000,   LENGTH = 512K
+  /* TODO: When doing OTA updates, i would need to change the LENGTH here since idk how i will split the flash sectors*/
+  FLASH    (rx)    : ORIGIN = __APP_FLASH_START,   LENGTH = 224K
 }
 
 /* Sections */
@@ -185,4 +188,5 @@ SECTIONS
   }
 
   .ARM.attributes 0 : { *(.ARM.attributes) }
+
 }
