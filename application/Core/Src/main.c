@@ -22,6 +22,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include <stdio.h>
+#include <string.h>
 
 #include "app_header.h"
 #include "flash_layout.h"
@@ -61,16 +62,15 @@ static void MX_USART1_UART_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
-int __io_putchar(int ch);
+static void log(const char *msg);
 
 /* USER CODE END 0 */
 
 /**
-  * @brief  The application entry point.
-  * @retval int
-  */
-int main(void)
-{
+ * @brief  The application entry point.
+ * @retval int
+ */
+int main(void) {
 
   /* USER CODE BEGIN 1 */
 
@@ -100,6 +100,7 @@ int main(void)
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
 
+  log("Hello from application");
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -224,9 +225,8 @@ static void MX_GPIO_Init(void) {
 
 /* USER CODE BEGIN 4 */
 
-int __io_putchar(int ch) {
-  HAL_UART_Transmit(&huart1, (uint8_t *)&ch, 1U, 10U);
-  return ch;
+static void log(const char *msg) {
+  HAL_UART_Transmit(&huart1, (uint8_t *)msg, (uint16_t)strlen(msg), 100);
 }
 
 /* USER CODE END 4 */
