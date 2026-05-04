@@ -2,6 +2,7 @@
 #include "main.h"
 #include <string.h>
 #include <stdio.h>
+#include "custom_crc32.h"
 
 extern UART_HandleTypeDef huart1;
 
@@ -28,12 +29,17 @@ enum verify_result_t bl_verify_app(void)
     check if the fw code is the one we expect
     we are doing our own crc calculation and comparing it to app header's crc
   */
+  uint32_t crc = crc32((const uint8_t *)APP_START_ADDR, app_header->size);
 
-/* 
   char msg[100];
-  snprintf(msg, 100, "Crc: %d", crc);
+  snprintf(msg, 100, "Crc: %d\r\n", crc);
   HAL_UART_Transmit(&huart1, (uint8_t *)msg, (uint16_t)strlen(msg), 100);
- */
+
+  if (crc != app_header->crc) {
+    return VERIFY_BAD_CRC;
+  }
+
+
   /* TODO: For later add anti rollback guard */
   /* TODO: add sha256 and signature checks */
 
