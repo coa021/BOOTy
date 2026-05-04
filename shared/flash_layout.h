@@ -36,20 +36,18 @@ TODO: Check on this logic */
 #define FLASH_SECTOR_7_END   0x0807FFFFU
 
 /* Grabbing values from the linker script */
-extern uint32_t __BL_FLASH_START;
-extern uint32_t __APP_FLASH_START;
+extern uint32_t __BL_FLASH_START;  // 0x08000000
+extern uint32_t __APP_FLASH_START; // 0x08008050
 /* sector 0 */
 #define BL_START_ADDR ((uint32_t)&__BL_FLASH_START)
-#define BL_SIZE                 (16U * 1024U)
+#define BL_SIZE (32U * 1024U)
 
 /* sector 1 */
-#define APP_HEADER_ADDR         0x08004000U
+#define APP_HEADER_ADDR (BL_START_ADDR + BL_SIZE)
 /* TODO: I dont need this sector now */
 #define APP_HEADER_SECTOR       FLASH_SECTOR_1_START
 
 /* sector 2-5 */
-/* header size is 1024B, or 1KB, which is enough i guess */
-/* Ill stick with giving it 16KB will change later */
 #define APP_START_ADDR ((uint32_t)&__APP_FLASH_START)
 /* TODO: Fix shit below */
 #define APP_START_SECTOR        FLASH_SECTOR_2_START

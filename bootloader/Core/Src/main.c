@@ -21,9 +21,9 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include <string.h>
 #include "bl_jump.h"
 #include "bl_verify.h"
+#include "custom_logger.h"
 
 /* USER CODE END Includes */
 
@@ -60,8 +60,6 @@ static void MX_USART1_UART_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
-static void log(const char *msg);
-
 /* USER CODE END 0 */
 
 /**
@@ -96,23 +94,26 @@ int main(void)
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
 
-  /* TODO: Will verify later */
-  log("Entering bootloader.\r\n");
+  custom_logger_init(&huart1);
 
-  log("Verifying app..\r\n");
+  /* TODO: Will verify later */
+  custom_logger_log("Entering bootloader.\r\n");
+
+  custom_logger_log("Verifying app..\r\n");
   enum verify_result_t res = bl_verify_app();
   if (res != VERIFY_OK) {
     /* TODO: Print this in a better way, log is so not feature rich now lol xd
      */
-    log("BOOTy: Verification failed");
-
+    custom_logger_log("BOOTy: Verification failed");
+    HAL_UART_Transmit(&huart1, (uint8_t *)res, sizeof(uint8_t), 100);
     while (1) {
       HAL_GPIO_TogglePin(LED_INDICATOR_GPIO_Port, LED_INDICATOR_Pin);
       HAL_Delay(2000);
     }
   }
 
-  log("BOOTy: Application validated successfully, jumping to app\r\n");
+  custom_logger_log(
+      "BOOTy: Application validated successfully, jumping to app\r\n");
   bl_jump_to_app();
 
   /* Should never reach here */
@@ -243,9 +244,6 @@ static void MX_GPIO_Init(void)
 
 /* USER CODE BEGIN 4 */
 
-static void log(const char *msg) {
-  HAL_UART_Transmit(&huart1, (uint8_t *)msg, (uint16_t)strlen(msg), 100);
-}
 /* USER CODE END 4 */
 
 /**
