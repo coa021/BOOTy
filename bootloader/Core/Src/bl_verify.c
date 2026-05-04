@@ -58,7 +58,6 @@ enum verify_result_t bl_verify_app(void) {
   if (crc != app_header->crc) {
     return VERIFY_BAD_CRC;
   }
-
   /* SHA 256 */
   uint8_t digest[32];
   struct tc_sha256_state_struct s;
@@ -78,7 +77,6 @@ enum verify_result_t bl_verify_app(void) {
   if (ecdsa_res != 1) {
     return VERIFY_BAD_SIGNATURE;
   }
-
   custom_logger_log("[BL]: bl_verify_app: all ok\r\n");
 
   /* TODO:VERIFY_BAD_VERSION For later, add anti rollback guard */

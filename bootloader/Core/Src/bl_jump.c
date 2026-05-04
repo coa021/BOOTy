@@ -15,6 +15,10 @@ void bl_jump_to_app(void) {
   SysTick->LOAD = 0;
   SysTick->VAL = 0;
 
+  /* testing if it makes difference here, obv not for now */
+  SCB->VTOR = APP_START_ADDR;
+
+  __enable_irq();
   __set_MSP(app_sp);
 
   p_func_t app_entry = (p_func_t)app_reset;

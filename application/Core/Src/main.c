@@ -82,24 +82,18 @@ int main(void) {
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-
-  /* I relocate vector table since the app start addr is moved */
-  SCB->VTOR = APP_START_ADDR;
-  __enable_irq();
   /* USER CODE END Init */
 
   /* Configure the system clock */
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
-
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
-
   log("Hello from application");
   /* USER CODE END 2 */
 
@@ -111,7 +105,9 @@ int main(void) {
 
     /* USER CODE BEGIN 3 */
     HAL_GPIO_TogglePin(LED_INDICATOR_GPIO_Port, LED_INDICATOR_Pin);
-    HAL_Delay(70);
+    HAL_Delay(150);
+
+    log("Hello from application");
   }
   /* USER CODE END 3 */
 }
@@ -205,7 +201,6 @@ static void MX_GPIO_Init(void) {
 
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOC_CLK_ENABLE();
-  __HAL_RCC_GPIOH_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
@@ -214,7 +209,7 @@ static void MX_GPIO_Init(void) {
   /*Configure GPIO pin : LED_INDICATOR_Pin */
   GPIO_InitStruct.Pin = LED_INDICATOR_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(LED_INDICATOR_GPIO_Port, &GPIO_InitStruct);
 

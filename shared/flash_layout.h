@@ -23,40 +23,40 @@ just an example
  */
 /* idk if what im doing is right lol
 TODO: Check on this logic */
-#define FLASH_SECTOR_0_START 0x08000000U
+/* #define FLASH_SECTOR_0_START 0x08000000U
 #define FLASH_SECTOR_1_START 0x08004000U
 #define FLASH_SECTOR_2_START 0x08008000U
 #define FLASH_SECTOR_3_START 0x0800C000U
 #define FLASH_SECTOR_4_START 0x08010000U
 #define FLASH_SECTOR_5_START 0x08020000U
 #define FLASH_SECTOR_6_START 0x08040000U
-#define FLASH_SECTOR_7_START 0x08060000U
+#define FLASH_SECTOR_7_START 0x08060000U */
 
-
-#define FLASH_SECTOR_7_END   0x0807FFFFU
+// #define FLASH_SECTOR_7_END   0x0807FFFFU
 
 /* Grabbing values from the linker script */
 extern uint32_t __BL_FLASH_START;  // 0x08000000
 extern uint32_t __APP_FLASH_START; // 0x08008050
-/* sector 0 */
+/* sector 0 and 1*/
 #define BL_START_ADDR ((uint32_t)&__BL_FLASH_START)
 #define BL_SIZE (32U * 1024U)
 
-/* sector 1 */
+/* sector 2 */
 #define APP_HEADER_ADDR (BL_START_ADDR + BL_SIZE)
 /* TODO: I dont need this sector now */
-#define APP_HEADER_SECTOR       FLASH_SECTOR_1_START
+// #define APP_HEADER_SECTOR       FLASH_SECTOR_1_START
 
 /* sector 2-5 */
 #define APP_START_ADDR ((uint32_t)&__APP_FLASH_START)
 /* TODO: Fix shit below */
-#define APP_START_SECTOR        FLASH_SECTOR_2_START
-#define APP_MAX_SIZE            (FLASH_SECTOR_6_START - FLASH_SECTOR_2_START)
+// #define APP_START_SECTOR        FLASH_SECTOR_2_START
+#define APP_MAX_SIZE (224*1024)
+//       (FLASH_SECTOR_6_START - FLASH_SECTOR_2_START)
 
 /* sector 6 and 7 */
-#define OTA_UPDATE_START_ADDR   0x08040000U
-#define OTA_UPDATE_START_SECTOR FLASH_SECTOR_6_START
-#define OTA_UPDATE_MAX_SIZE     (FLASH_SECTOR_7_END - FLASH_SECTOR_6_START)
+// #define OTA_UPDATE_START_ADDR   0x08040000U
+// #define OTA_UPDATE_START_SECTOR FLASH_SECTOR_6_START
+// #define OTA_UPDATE_MAX_SIZE     (FLASH_SECTOR_7_END - FLASH_SECTOR_6_START)
 
 /* first 4 bytes are initial stack pointer, i need reset handler which comes
  * after that */

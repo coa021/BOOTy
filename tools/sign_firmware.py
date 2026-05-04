@@ -11,7 +11,11 @@ from cryptography.hazmat.primitives.asymmetric.utils import decode_dss_signature
 
 
 APP_MAGIC = 0x0B00B1E5
-HEADER_SIZE = 80
+
+# Note for future readings, or if someone stumbles upon this. i need to align this with 512KB
+# https://community.st.com/t5/stm32-mcus-embedded-software/issue-on-hal-delay-after-jump-from-bootloader/td-p/155975
+# Tesla DeLorean states this in his comment. 
+HEADER_SIZE = 512
 
 def load_private_key():
     with open("dont-touch/private_key.pem", "rb") as f:
@@ -68,8 +72,8 @@ def cmd_sign(args):
     out.write_bytes(header + code)
     
     print(f"Signed image: {out}  ({len(header) + len(code)} bytes)")
-    print(f"  Header @ 0x08004000 ({HEADER_SIZE} bytes)")
-    print(f"  Code   @ 0x08006000 ({len(code)} bytes)")
+    print(f"  Header  ({HEADER_SIZE} bytes)")
+    print(f"  Code    ({len(code)} bytes)")
 
 
 if __name__ == "__main__":
