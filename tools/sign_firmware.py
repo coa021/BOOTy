@@ -3,20 +3,21 @@ import argparse
 import struct
 import sys
 from pathlib import Path
+import zlib
 
 # Must match shared/app_header.h
 APP_MAGIC    = 0x0B00B1E5
-# Jebemu mater de znam. idk why im giving 16KB now, seems too much. but i was thinking something regarding the sector so fuck it, will change later
 HEADER_SIZE  = 16384
 
-# Source - https://stackoverflow.com/a/75572017
-# Posted by Satake, modified by community. See post 'Timeline' for change history
-# Retrieved 2026-05-04, License - CC BY-SA 4.0
-def crc32mpeg2(buf, crc=0xffffffff):
-    for val in buf:
-        crc ^= val << 24
-        for _ in range(8):
-            crc = crc << 1 if (crc & 0x80000000) == 0 else (crc << 1) ^ 0x104c11db7
+
+def custom_crc(app_bin):
+    with open(app_bin, "rb") as f:
+        data = f.read()
+
+    crc = zlib.crc32(data) & 0xFFFFFFFF
+
+    print(f"CRC32 = 0x{crc:08X}")
+    print(f"Size  = {len(data)} bytes")
     return crc
 
 
@@ -28,7 +29,10 @@ def cmd_sign(args):
     code = Path(args.input).read_bytes()
     version = version_to_int(args.version)
 
-    header = struct.pack("<III", APP_MAGIC, version, len(code))
+    crc = custom_crc(args.input)
+
+
+    header = struct.pack("<IIII", APP_MAGIC, version, len(code), crc)
     header += bytes(HEADER_SIZE - len(header))
     
     assert len(header) == HEADER_SIZE
