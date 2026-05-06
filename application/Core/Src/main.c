@@ -25,7 +25,9 @@
 #include <string.h>
 
 #include "app_header.h"
+#include "flash/operations.h"
 #include "flash_layout.h"
+#include "updates/otw_update.h"
 
 /* USER CODE END Includes */
 
@@ -61,6 +63,8 @@ static void MX_USART1_UART_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+uint8_t rx_buffer;
+static uint32_t last_press = 0;
 
 static void log(const char *msg);
 
@@ -94,7 +98,12 @@ int main(void) {
   MX_GPIO_Init();
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
-  log("Hello from application");
+
+  otw_update_init(); // delete flash region lol this is bad
+  /* kickstart */
+  HAL_UART_Receive_IT(&huart1, &rx_buffer, 1);
+
+  log("\nHello from application\n");
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -105,9 +114,8 @@ int main(void) {
 
     /* USER CODE BEGIN 3 */
     HAL_GPIO_TogglePin(LED_INDICATOR_GPIO_Port, LED_INDICATOR_Pin);
-    HAL_Delay(150);
 
-    log("Hello from application");
+    HAL_Delay(500);
   }
   /* USER CODE END 3 */
 }
@@ -209,9 +217,19 @@ static void MX_GPIO_Init(void) {
   /*Configure GPIO pin : LED_INDICATOR_Pin */
   GPIO_InitStruct.Pin = LED_INDICATOR_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(LED_INDICATOR_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : SET_OTW_FLAG_BTN_Pin */
+  GPIO_InitStruct.Pin = SET_OTW_FLAG_BTN_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+  HAL_GPIO_Init(SET_OTW_FLAG_BTN_GPIO_Port, &GPIO_InitStruct);
+
+  /* EXTI interrupt init*/
+  HAL_NVIC_SetPriority(EXTI4_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI4_IRQn);
 
   /* USER CODE BEGIN MX_GPIO_Init_2 */
 
@@ -224,19 +242,43 @@ static void log(const char *msg) {
   HAL_UART_Transmit(&huart1, (uint8_t *)msg, (uint16_t)strlen(msg), 100);
 }
 
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
+  if (HAL_GetTick() - last_press > 100) {
+    last_press = HAL_GetTick();
+    // Flash_Erase_Sectors(FLASH_SECTOR_2, 2);
+    log("button clicked from the version 500ms");
+  }
+}
+
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
+
+  if (huart->Instance == USART1) {
+    {
+
+      otw_update_receive_byte(rx_buffer);
+
+      HAL_UART_Transmit_IT(&huart1, &rx_buffer, 1);
+      HAL_UART_Receive_IT(&huart1, &rx_buffer, 1);
+    }
+  }
+}
+void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size) {
+  if (huart->Instance == USART1) {
+    otw_update_flush();
+  }
+}
 /* USER CODE END 4 */
 
 /**
-  * @brief  This function is executed in case of error occurrence.
-  * @retval None
-  */
-void Error_Handler(void)
-{
+ * @brief  This function is executed in case of error occurrence.
+ * @retval None
+ */
+void Error_Handler(void) {
   /* USER CODE BEGIN Error_Handler_Debug */
-  /* User can add his own implementation to report the HAL error return state */
+  /* User can add his own implementation to report the HAL error return state
+   */
   __disable_irq();
-  while (1)
-  {
+  while (1) {
   }
   /* USER CODE END Error_Handler_Debug */
 }

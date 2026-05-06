@@ -5,7 +5,8 @@
 
 
 int custom_logger_init(UART_HandleTypeDef *huart1);
-void custom_logger_log(const char *msg);
+
+void custom_logger_log(const char *fmt, ...);
 
 
 #endif

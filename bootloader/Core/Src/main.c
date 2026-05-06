@@ -24,6 +24,8 @@
 #include "bl_jump.h"
 #include "bl_verify.h"
 #include "custom_logger.h"
+#include "flash/operations.h"
+#include <stdbool.h>
 
 /* USER CODE END Includes */
 
@@ -95,16 +97,40 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
   custom_logger_init(&huart1);
-
   /* TODO: Will verify later */
   custom_logger_log("Entering bootloader.\r\n");
 
+  //  enum verify_result_t res = bl_verify_update(UPDATE_STORAGE_START_ADDR);
+  //  if (res == VERIFY_UPDATE_AVAILABLE) {
+  //    custom_logger_log("Update available, doing checks\n");
+  //    res = bl_update_fw();
+  //    if (res != VERIFY_OK) {
+  //      custom_logger_log("problem with flash erase and write somewhere");
+  //    }
+  //  }
+
+  bool boot_update = bl_check_for_update();
+
+  if (boot_update) {
+    /* new version available */
+    if (bl_swap_updates()) {
+      custom_logger_log("[BL]: Swap successfull\n");
+    } else {
+      custom_logger_log("[BL]: Swap NOT!!!! successfull\n");
+    }
+  }
+
+  // uint32_t boot_address =
+  // boot_update ? UPDATE_STORAGE_START_ADDR : APP_HEADER_ADDR;
+
   custom_logger_log("Verifying app..\r\n");
-  enum verify_result_t res = bl_verify_app();
+  /* TODO: Please fix, abomination */
+  enum verify_result_t res =
+      bl_verify_app((const struct app_header_t *)APP_HEADER_ADDR);
   if (res != VERIFY_OK) {
     /* TODO: Print this in a better way, log is so not feature rich now lol xd
      */
-    custom_logger_log("BOOTy: Verification failed");
+    custom_logger_log("BOOTy: Verification failed\r\n");
     HAL_UART_Transmit(&huart1, (uint8_t *)res, sizeof(uint8_t), 100);
     while (1) {
       HAL_GPIO_TogglePin(LED_INDICATOR_GPIO_Port, LED_INDICATOR_Pin);

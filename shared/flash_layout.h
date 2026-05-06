@@ -39,6 +39,8 @@ extern uint32_t __APP_FLASH_START;  // 0x08008200
 extern uint32_t __APP_HEADER_START; // 0x08008000
 extern uint32_t __APP_MAIN_LENGTH;  // 224K
 extern uint32_t __BL_LENGTH;        // 32K
+extern uint32_t __UPDATE_STORAGE_FLASH_START; // 0x08040000
+extern uint32_t __UPDATE_STORAGE_LENGTH;      // 256K
 
 /* sector 0 and 1*/
 #define BL_START_ADDR ((uint32_t)&__BL_FLASH_START)
@@ -55,6 +57,11 @@ extern uint32_t __BL_LENGTH;        // 32K
 // #define APP_START_SECTOR        FLASH_SECTOR_2_START
 #define APP_MAX_SIZE ((uint32_t)&__APP_MAIN_LENGTH)
 //       (FLASH_SECTOR_6_START - FLASH_SECTOR_2_START)
+
+/* sector 6 and 7 */
+
+#define UPDATE_STORAGE_START_ADDR ((uint32_t)&__UPDATE_STORAGE_FLASH_START)
+#define UPDATE_STORAGE_SIZE ((uin32_t) & __UPDATE_STORAGE_LENGTH)
 
 /* sector 6 and 7 */
 // #define OTA_UPDATE_START_ADDR   0x08040000U

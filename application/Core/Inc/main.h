@@ -59,6 +59,9 @@ void Error_Handler(void);
 /* Private defines -----------------------------------------------------------*/
 #define LED_INDICATOR_Pin GPIO_PIN_13
 #define LED_INDICATOR_GPIO_Port GPIOC
+#define SET_OTW_FLAG_BTN_Pin GPIO_PIN_4
+#define SET_OTW_FLAG_BTN_GPIO_Port GPIOA
+#define SET_OTW_FLAG_BTN_EXTI_IRQn EXTI4_IRQn
 
 /* USER CODE BEGIN Private defines */
 
