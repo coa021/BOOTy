@@ -33,60 +33,7 @@ static const uint8_t _PUBLIC_KEY[64] = {
     0x9f, 0x5a, 0x6e, 0xea, 0x64, 0x0e, 0xfe, 0x78,
 };
 // clang-format on
-// /*
-// enum verify_result_t bl_verify_update() {
-//   const struct app_header_t *app_header = (const struct app_header_t
-//   *)address; if (app_header->update == 0) {
-//     custom_logger_log("[BL]: update flag is: 0");
-//     return VERIFY_NO_UPDATE_AVAILABLE;
-//   }
-//   return VERIFY_UPDATE_AVAILABLE;
-// }
 
-// enum verify_result_t bl_update_fw(void) {
-//   enum verify_result_t res = bl_verify_app(UPDATE_STORAGE_START_ADDR);
-//   if (res != VERIFY_OK) {
-//     custom_logger_log("[BL]: Problem with verifying updated app fw");
-//     return res;
-//   }
-
-//   // update available
-//   /* i need to check if the update is legit, so ill have to do the same thing
-//    * bl_verify_app but for the starting address of the update sector; after
-//    that i need to move the new app to sector 2-5. once moved, remove update
-//    from flash  and then the code will check it again one problem: i have
-//    update bit flag set, but it doesnt matter since i will be removing it from
-//    flash s6-7 why do i need this flag at all then? if i have something in the
-//    flash s6 and 7, i should just check that and write it to the main app
-//    sectors?
-//    */
-
-//   // remove main app sectors
-//   bl_remove_sectors(FLASH_SECTOR_2, 4);
-//   // start moving the update to the app sectors
-//   // TODO: Write a function for this
-//   uint8_t fw_buf[256];
-//   uint32_t fw_buf_idx = 0;
-//   uint32_t flash_write_addr = APP_HEADER_ADDR;
-
-//   const uin32_t FLASH_WRITE_CHUNK = 256;
-//   while ((flash_write_addr - APP_HEADER_ADDR) < 12000) {
-//     fw_buf[fw_buf_idx++] = byte;
-
-//     if (fw_buf_idx == FLASH_WRITE_CHUNK) {
-//       // buffer full,  to flash
-//       Flash_Write_Data(flash_write_addr, (uint32_t *)fw_buf,
-//                        FLASH_WRITE_CHUNK / 4);
-//       flash_write_addr += FLASH_WRITE_CHUNK;
-//       fw_buf_idx = 0;
-//     }
-//   }
-//   return VERIFY_OK;
-// } */
-
-// int32_t bl_remove_sectors(uint32_t sector, uint32_t num_sectors) {
-//   int32_t res = Flash_Erase_Sectors(sector, num_sectors);
-// }
 
 enum verify_result_t bl_verify_app(const struct app_header_t *app_header) {
   custom_logger_log("[BL]: bl_veify_app address: %x\r\n", app_header);
@@ -112,8 +59,8 @@ enum verify_result_t bl_verify_app(const struct app_header_t *app_header) {
    */
 
   custom_logger_log("[BL]: im checking address %x\r\n",
-                    (const uint8_t *)app_header + 512);
-  uint32_t crc = crc32((const uint8_t *)app_header + 512, app_header->size);
+                    (const uint8_t *)app_header + APP_HEADER_SIZE);
+  uint32_t crc = crc32((const uint8_t *)app_header + APP_HEADER_SIZE, app_header->size);
   if (crc != app_header->crc) {
     return VERIFY_BAD_CRC;
   }
@@ -123,12 +70,10 @@ enum verify_result_t bl_verify_app(const struct app_header_t *app_header) {
   (void)tc_sha256_init(&s);
   /* TODO: Fix magic constant, 512 is because thats the padding for the header
    */
-  tc_sha256_update(&s, (const uint8_t *)app_header + 512, app_header->size);
+  tc_sha256_update(&s, (const uint8_t *)app_header + APP_HEADER_SIZE, app_header->size);
   (void)tc_sha256_final(digest, &s);
 
-  char msg[100];
-  snprintf(msg, 100, "BOOTy: before ecdsa\r\n");
-  custom_logger_log(msg);
+  custom_logger_log("[BL]: before ecdsa\r\n");
 
   /* Signature */
   int ecdsa_res = uECC_verify(_PUBLIC_KEY, digest, sizeof(digest),
@@ -138,58 +83,10 @@ enum verify_result_t bl_verify_app(const struct app_header_t *app_header) {
   if (ecdsa_res != 1) {
     return VERIFY_BAD_SIGNATURE;
   }
+  
   custom_logger_log("[BL]: bl_verify_app: all ok\r\n");
 
   /* TODO:VERIFY_BAD_VERSION For later, add anti rollback guard */
 
   return VERIFY_OK;
-}
-
-bool bl_check_for_update(void) {
-
-  const struct app_header_t *app_header =
-      (const struct app_header_t *)APP_HEADER_ADDR;
-
-  const struct app_header_t *update_app_header =
-      (const struct app_header_t *)UPDATE_STORAGE_START_ADDR;
-
-  custom_logger_log("Current app version is: %x", app_header->version);
-
-  custom_logger_log("Current update_app_header version is: %x",
-                    update_app_header->version);
-
-  return (update_app_header->version > app_header->version);
-}
-
-bool bl_swap_updates(void) {
-
-  const struct app_header_t *app_header =
-      (const struct app_header_t *)UPDATE_STORAGE_START_ADDR;
-  /* verify if the app from update is valid */
-  enum verify_result_t res = bl_verify_app(app_header);
-  if (res != VERIFY_OK) {
-    custom_logger_log(
-        "[BL]: Failed verifying updated firmware app with reason: %d\n", res);
-    return false;
-  }
-
-  /* erase sector 2 to sector 6, this is main app */
-  Flash_Erase_Sectors(FLASH_SECTOR_2, 4);
-  /* i need some way to move chunks from update slot to main app slot */
-  uint8_t *src = (uint8_t *)UPDATE_STORAGE_START_ADDR;
-  uint8_t fw_buf[256];
-  uint32_t bytes_copied = 0;
-  uint32_t fw_size = app_header->size + 512;
-  uint32_t flash_write_addr = APP_HEADER_ADDR;
-  const uint32_t CHUNK = 256;
-  int32_t chunk;
-  while (bytes_copied < fw_size) {
-    chunk = (fw_size - bytes_copied) < CHUNK ? (fw_size - bytes_copied) : CHUNK;
-    memcpy(fw_buf, src + bytes_copied, chunk);
-    Flash_Write_Data(flash_write_addr, (uint32_t *)fw_buf, chunk / 4);
-    flash_write_addr += chunk;
-    bytes_copied += chunk;
-  }
-  return true;
-  //
 }

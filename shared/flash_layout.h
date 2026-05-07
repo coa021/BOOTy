@@ -1,7 +1,7 @@
 #ifndef _SHARED__FLASH_LAYOUT_H
 #define _SHARED__FLASH_LAYOUT_H
 
-#include "app_header.h"
+#include <stdint.h>
 
 /*
 Now regarding sectors of the main memory, this is how it looks like
@@ -57,6 +57,8 @@ extern uint32_t __UPDATE_STORAGE_LENGTH;      // 256K
 // #define APP_START_SECTOR        FLASH_SECTOR_2_START
 #define APP_MAX_SIZE ((uint32_t)&__APP_MAIN_LENGTH)
 //       (FLASH_SECTOR_6_START - FLASH_SECTOR_2_START)
+
+#define APP_HEADER_SIZE (APP_START_ADDR - APP_HEADER_ADDR)
 
 /* sector 6 and 7 */
 

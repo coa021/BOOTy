@@ -58,24 +58,21 @@ uint32_t Flash_Write_Data(uint32_t StartSectorAddress, uint32_t *Data,
   return 0;
 }
 
-int32_t Flash_Erase_Sectors(uint32_t sector, uint32_t num_sectors)
-{
-  /* i need some check if it is already removed or something similar */
-    FLASH_EraseInitTypeDef erase = {
-        .TypeErase    = FLASH_TYPEERASE_SECTORS,
-        .VoltageRange = FLASH_VOLTAGE_RANGE_3,
-        .Sector       = sector,
-        .NbSectors    = num_sectors,
-        // from sector 2 to 6 i guess? but not including 6
-    };
+int32_t Flash_Erase_Sectors(uint32_t sector, uint32_t num_sectors) {
+  FLASH_EraseInitTypeDef erase = {
+      .TypeErase = FLASH_TYPEERASE_SECTORS,
+      .VoltageRange = FLASH_VOLTAGE_RANGE_3,
+      .Sector = sector,
+      .NbSectors = num_sectors,
+  };
 
-    uint32_t sector_error;
-    HAL_FLASH_Unlock();
-    uint32_t result = (HAL_FLASHEx_Erase(&erase, &sector_error) != HAL_OK)
-                      ? HAL_FLASH_GetError()
-                      : 0;
-    HAL_FLASH_Lock();
-    return result;
+  uint32_t sector_error;
+  HAL_FLASH_Unlock();
+  uint32_t result = (HAL_FLASHEx_Erase(&erase, &sector_error) != HAL_OK)
+                        ? HAL_FLASH_GetError()
+                        : 0;
+  HAL_FLASH_Lock();
+  return result;
 }
 
 void Flash_Read_Data(uint32_t StartSectorAddress, uint32_t *RxBuf,
