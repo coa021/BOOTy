@@ -48,7 +48,7 @@ MEMORY
 {
   RAM    (xrw)    : ORIGIN = 0x20000000,   LENGTH = 128K
   /* TODO: When doing OTA updates, i would need to change the LENGTH here since idk how i will split the flash sectors*/
-  FLASH    (rx)    : ORIGIN = __APP_FLASH_START,   LENGTH = 224K
+  FLASH    (rx)    : ORIGIN = __APP_FLASH_START,   LENGTH = __APP_MAIN_LENGTH
   UPDATE_STORAGE (rw) : ORIGIN = __UPDATE_STORAGE_FLASH_START, LENGTH = __UPDATE_STORAGE_LENGTH
 }
 

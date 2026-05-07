@@ -1,5 +1,5 @@
 #include "bl_verify.h"
-#include "custom_crc32.h"
+#include "custom_crc/custom_crc32.h"
 #include "main.h"
 #include "tinycrypt/ecc_dsa.h"
 #include "tinycrypt/sha256.h"
@@ -12,7 +12,9 @@
 
 extern UART_HandleTypeDef huart1;
 
-/* TODO: For later usage. This will be version 1.0, first 4 bits are major version, second 4 are minor version. Will see how can i implement anti rollback for this one */
+/* TODO: For later usage. This will be version 1.0, first 4 bits are major
+ * version, second 4 are minor version. Will see how can i implement anti
+ * rollback for this one */
 #define MIN_VERSION 0x00010000U
 
 // clang-format off
@@ -33,7 +35,6 @@ static const uint8_t _PUBLIC_KEY[64] = {
     0x9f, 0x5a, 0x6e, 0xea, 0x64, 0x0e, 0xfe, 0x78,
 };
 // clang-format on
-
 
 enum verify_result_t bl_verify_app(const struct app_header_t *app_header) {
   custom_logger_log("[BL]: bl_veify_app address: %x\r\n", app_header);
@@ -60,7 +61,8 @@ enum verify_result_t bl_verify_app(const struct app_header_t *app_header) {
 
   custom_logger_log("[BL]: im checking address %x\r\n",
                     (const uint8_t *)app_header + APP_HEADER_SIZE);
-  uint32_t crc = crc32((const uint8_t *)app_header + APP_HEADER_SIZE, app_header->size);
+  uint32_t crc =
+      crc32((const uint8_t *)app_header + APP_HEADER_SIZE, app_header->size);
   if (crc != app_header->crc) {
     return VERIFY_BAD_CRC;
   }
@@ -70,7 +72,8 @@ enum verify_result_t bl_verify_app(const struct app_header_t *app_header) {
   (void)tc_sha256_init(&s);
   /* TODO: Fix magic constant, 512 is because thats the padding for the header
    */
-  tc_sha256_update(&s, (const uint8_t *)app_header + APP_HEADER_SIZE, app_header->size);
+  tc_sha256_update(&s, (const uint8_t *)app_header + APP_HEADER_SIZE,
+                   app_header->size);
   (void)tc_sha256_final(digest, &s);
 
   custom_logger_log("[BL]: before ecdsa\r\n");
@@ -83,7 +86,7 @@ enum verify_result_t bl_verify_app(const struct app_header_t *app_header) {
   if (ecdsa_res != 1) {
     return VERIFY_BAD_SIGNATURE;
   }
-  
+
   custom_logger_log("[BL]: bl_verify_app: all ok\r\n");
 
   /* TODO:VERIFY_BAD_VERSION For later, add anti rollback guard */

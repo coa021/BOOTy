@@ -23,6 +23,7 @@
 /* USER CODE BEGIN Includes */
 #include "bl_jump.h"
 #include "bl_verify.h"
+#include "bl_update.h"
 #include "custom_logger.h"
 #include "flash/operations.h"
 #include <stdbool.h>
@@ -113,7 +114,8 @@ int main(void)
 
   if (boot_update) {
     /* new version available */
-    if (bl_swap_updates()) {
+    // if (bl_swap_updates())
+    if (bl_swap_partitions()) {
       custom_logger_log("[BL]: Swap successfull\n");
     } else {
       custom_logger_log("[BL]: Swap NOT!!!! successfull\n");

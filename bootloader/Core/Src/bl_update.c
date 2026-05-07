@@ -55,7 +55,7 @@ bool bl_check_for_update(void) {
   custom_logger_log("Current update_app_header version is: %x",
                     get_update_header()->version);
 
-  return (get_update_header()->version > get_app_header()->version);
+  return (get_update_header()->version >= get_app_header()->version);
 }
 
 bool bl_swap_updates(void) {
@@ -105,7 +105,7 @@ bool bl_swap_partitions(void) {
 
   /* i need to grab the fw into ram, overwrite it with the main app, move update
    * from ram to main slot */
-  const uint32_t fw_update_size = get_update_header()->size;
+  const uint32_t fw_update_size = get_update_header()->size + 512;
   uint8_t fw_update_buff[fw_update_size];
   memcpy(fw_update_buff, get_update_header(), fw_update_size);
 
