@@ -34,6 +34,8 @@
 #include "updates/otw_uart_receiver.h"
 #include "updates/otw_update.h"
 
+#include "custom_crc/custom_crc32.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -52,7 +54,7 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
-TIM_HandleTypeDef htim2;
+TIM_HandleTypeDef htim1;
 
 UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart2;
@@ -65,8 +67,8 @@ UART_HandleTypeDef huart2;
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USART1_UART_Init(void);
-static void MX_TIM2_Init(void);
 static void MX_USART2_UART_Init(void);
+static void MX_TIM1_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -83,6 +85,20 @@ static uint32_t last_press = 0;
 uint32_t last_blink = 0;
 
 static void log(const char *msg);
+
+char huart2_rx_buffer;
+
+volatile bool print_flag = false;
+
+char my_buffer[256];
+volatile char uart1_rx_byte;
+volatile uint8_t buffer_idx=0;
+
+
+volatile bool flag_check_crc16 = false;
+
+const char _ACK = 0x01;
+const char _NACK = 0x15;
 
 /* USER CODE END 0 */
 
@@ -114,49 +130,73 @@ int main(void) {
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_USART1_UART_Init();
-  MX_TIM2_Init();
   MX_USART2_UART_Init();
+  MX_TIM1_Init();
   /* USER CODE BEGIN 2 */
 
   /* initializations */
-  custom_logger_init(&huart1);
-  rb_init(&rx_ring);
-  otw_uart_receiver_init(&receiver, &rx_ring, &huart1);
-  otw_packet_parser_init(&parser, &rx_ring, &htim2);
-  otw_update_init(&update, &huart1);
+  custom_logger_init(&huart2);
+  // rb_init(&rx_ring);
+  // otw_uart_receiver_init(&receiver, &rx_ring, &huart1);
+  // otw_packet_parser_init(&parser, &rx_ring, &htim1);
+  // otw_update_init(&update, &huart1);
 
-  log("\nHello from application v5\n");
+  custom_logger_log("\nHello from application v0\n");
+
+  HAL_UART_Receive_IT(&huart2, &huart2_rx_buffer, 1);
+  HAL_UART_Receive_IT(&huart1, &uart1_rx_byte, 1);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   enum otw_parse_result_t result;
+
   while (1) {
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-    result = otw_packet_parser_update(&parser);
 
-    switch (result) {
-    case OTW_PARSE_RESULT_COMPLETE: {
-      const struct otw_uart_packet_t *packet =
-          otw_packet_parser_get_packet(&parser);
-      bool done = otw_update_handle_packet(&update, packet);
-      otw_packet_parser_reset(&parser);
+	  if(flag_check_crc16) {
 
-      if (done) {
-        HAL_NVIC_SystemReset();
-      }
-      break;
-    }
-    case OTW_PARSE_RESULT_ERROR: {
-      otw_update_handle_error(&update);
-      otw_packet_parser_reset(&parser);
-      break;
-    }
-    default:
-      break;
-    }
+		  // check crc
+		  uint16_t calculated_crc16 = crc16(my_buffer, buffer_idx);
+		  uint16_t expected_crc16 = my_buffer[buffer_idx-2] | (my_buffer[buffer_idx-1]<<8);
+
+		  if(calculated_crc16 != expected_crc16){
+			  custom_logger_log("Missmatch in crc16; expected: %d,\tactual: %d\r\n", expected_crc16, calculated_crc16);
+			  HAL_UART_Transmit_IT(&huart1, &_NACK, 1);
+		  }
+
+		  custom_logger_log("Crc16 is matching\r\n");
+		  HAL_UART_Transmit_IT(&huart1, &_ACK, 1);
+		  flag_check_crc16 = false;
+	  }
+    // result = otw_packet_parser_update(&parser);
+
+    // switch (result) {
+    // case OTW_PARSE_RESULT_COMPLETE: {
+    //   const struct otw_uart_packet_t *packet =
+    //       otw_packet_parser_get_packet(&parser);
+    //   bool done = otw_update_handle_packet(&update, packet);
+    //   otw_packet_parser_reset(&parser);
+
+    //   if (done) {
+    //     custom_logger_log("Successfully transferred new firmware\r\n");
+    //     HAL_Delay(1000);
+    //     HAL_NVIC_SystemReset();
+    //   }
+    //   break;
+    // }
+    // case OTW_PARSE_RESULT_ERROR: {
+    //   otw_update_handle_error(&update);
+    //   otw_packet_parser_reset(&parser);
+    //   break;
+    // }
+    // default:
+    //   break;
+    // }
+
+
 
     if (HAL_GetTick() - last_blink >= 150) {
       last_blink = HAL_GetTick();
@@ -211,43 +251,47 @@ void SystemClock_Config(void) {
 }
 
 /**
- * @brief TIM2 Initialization Function
+ * @brief TIM1 Initialization Function
  * @param None
  * @retval None
  */
-static void MX_TIM2_Init(void) {
+static void MX_TIM1_Init(void) {
 
-  /* USER CODE BEGIN TIM2_Init 0 */
+  /* USER CODE BEGIN TIM1_Init 0 */
 
-  /* USER CODE END TIM2_Init 0 */
+  /* USER CODE END TIM1_Init 0 */
 
   TIM_ClockConfigTypeDef sClockSourceConfig = {0};
   TIM_MasterConfigTypeDef sMasterConfig = {0};
 
-  /* USER CODE BEGIN TIM2_Init 1 */
+  /* USER CODE BEGIN TIM1_Init 1 */
 
-  /* USER CODE END TIM2_Init 1 */
-  htim2.Instance = TIM2;
-  htim2.Init.Prescaler = 0;
-  htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim2.Init.Period = 499;
-  htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-  htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
-  if (HAL_TIM_Base_Init(&htim2) != HAL_OK) {
+  /* USER CODE END TIM1_Init 1 */
+  htim1.Instance = TIM1;
+  htim1.Init.Prescaler = 99;
+  htim1.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim1.Init.Period = 49999;
+  htim1.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim1.Init.RepetitionCounter = 0;
+  htim1.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
+  if (HAL_TIM_Base_Init(&htim1) != HAL_OK) {
     Error_Handler();
   }
   sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
-  if (HAL_TIM_ConfigClockSource(&htim2, &sClockSourceConfig) != HAL_OK) {
+  if (HAL_TIM_ConfigClockSource(&htim1, &sClockSourceConfig) != HAL_OK) {
     Error_Handler();
   }
+//  if (HAL_TIM_OnePulse_Init(&htim1, TIM_OPMODE_SINGLE) != HAL_OK) {
+//    Error_Handler();
+//  }
   sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
   sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-  if (HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig) != HAL_OK) {
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim1, &sMasterConfig) != HAL_OK) {
     Error_Handler();
   }
-  /* USER CODE BEGIN TIM2_Init 2 */
+  /* USER CODE BEGIN TIM1_Init 2 */
 
-  /* USER CODE END TIM2_Init 2 */
+  /* USER CODE END TIM1_Init 2 */
 }
 
 /**
@@ -339,7 +383,7 @@ static void MX_GPIO_Init(void) {
   /*Configure GPIO pin : SET_OTW_FLAG_BTN_Pin */
   GPIO_InitStruct.Pin = SET_OTW_FLAG_BTN_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
-  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(SET_OTW_FLAG_BTN_GPIO_Port, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
@@ -353,20 +397,38 @@ static void MX_GPIO_Init(void) {
 
 /* USER CODE BEGIN 4 */
 
-static void log(const char *msg) {
-  HAL_UART_Transmit(&huart1, (uint8_t *)msg, (uint16_t)strlen(msg), 100);
-}
-
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
   if (HAL_GetTick() - last_press > 100) {
     last_press = HAL_GetTick();
     // Flash_Erase_Sectors(FLASH_SECTOR_2, 2);
-    log("Hello ciggy wie gehts es ihnen2?\n");
+    custom_logger_log("Button clicked\n");
+    HAL_GPIO_WritePin(TIMER_TEST_BTN_GPIO_Port, TIMER_TEST_BTN_Pin, 1);
+    print_flag=true;
   }
 }
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
-  otw_uart_receiver_rx_cplt_callback(huart);
+  // otw_uart_receiver_rx_cplt_callback(huart);
+
+  if (huart->Instance == huart1.Instance) {
+	  HAL_UART_Receive_IT(&huart1, &uart1_rx_byte, 1);
+//    HAL_UART_Transmit_IT(&huart2, &uart1_rx_byte, 1
+
+      HAL_TIM_Base_Stop_IT(&htim1);
+//    __HAL_TIM_SET_COUNTER(&htim1, 0);
+//    CLEAR_BIT(htim1.Instance->CR1, TIM_CR1_OPM);
+
+    my_buffer[buffer_idx++] = uart1_rx_byte;
+
+    HAL_TIM_Base_Start_IT(&htim1);
+  }
+
+  if (huart->Instance == huart2.Instance) {
+//    HAL_TIM_Base_Start_IT(&htim1);
+    HAL_UART_Receive_IT(&huart2, &huart2_rx_buffer, 1);
+    HAL_UART_Transmit(&huart2, &huart2_rx_buffer, 1, 0xffff);
+
+  }
 }
 
 void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size) {
@@ -376,7 +438,25 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size) {
 }
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
-  otw_packet_parser_timeout_callback(&parser, htim);
+  // otw_packet_parser_timeout_callback(&parser, htim);
+  if (htim->Instance == htim1.Instance) {
+    // os timer sent interrupt
+    // i would need to restart it
+
+    HAL_TIM_Base_Stop_IT(htim);
+
+    if(buffer_idx > 0) {
+       	// i received whole chunk i need to tell timer to print it by disabling it
+    	HAL_UART_Transmit_IT(&huart1, &_ACK, 1);
+    	custom_logger_log("Message: %s\r\n", my_buffer);
+    	my_buffer[0]= '\0';
+    	buffer_idx = 0;
+    	flag_check_crc16 = true;
+       } else {
+    	   custom_logger_log("Nack\r\n");
+    	   HAL_UART_Transmit_IT(&huart1, &_NACK, 1);
+       }
+  }
 }
 
 /* USER CODE END 4 */

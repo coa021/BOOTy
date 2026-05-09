@@ -1,12 +1,11 @@
 #include "bl_update.h"
 
+#include "app_header.h"
 #include "bl_verify.h"
 #include "custom_logger.h"
 #include "flash/operations.h"
 #include "flash_layout.h"
-#include "app_header.h"
 #include <string.h>
-
 
 #define COPY_BUFFER_SIZE 256
 
@@ -23,7 +22,12 @@ static bool fw_copy_to_address(uint32_t copy_start_addr,
   uint32_t words;
   uint32_t ret;
 
+  custom_logger_log("Entering fw_copy_to_address\r\n");
+
   while (bytes_copied < fw_app_size) {
+    custom_logger_log("Bytes copied: {%d} / {%d}\r\n", bytes_copied,
+                      fw_app_size);
+
     chunk = (fw_app_size - bytes_copied) < COPY_BUFFER_SIZE
                 ? (fw_app_size - bytes_copied)
                 : COPY_BUFFER_SIZE;
@@ -36,7 +40,7 @@ static bool fw_copy_to_address(uint32_t copy_start_addr,
     words = (chunk + 3) / 4;
     ret = Flash_Write_Data(flash_write_addr, (uint32_t *)fw_buf, words);
     if (ret != HAL_FLASH_ERROR_NONE) {
-      custom_logger_log("Error in Flash_Write_Data with ret: %d", ret);
+      custom_logger_log("Error in Flash_Write_Data with ret: %d\r\n", ret);
       return false;
     }
     /* we wrote full words, nothing is leftover */
@@ -44,7 +48,7 @@ static bool fw_copy_to_address(uint32_t copy_start_addr,
     bytes_copied += chunk;
   }
 
-  custom_logger_log("fw_copy_to_sector succeeded in copying app");
+  custom_logger_log("fw_copy_to_sector succeeded in copying app\r\n");
   return true;
 }
 
@@ -52,13 +56,13 @@ static bool fw_copy_to_address(uint32_t copy_start_addr,
 bool bl_check_for_update(void) {
   custom_logger_log("Current app version is: %x", get_app_header()->version);
 
-  custom_logger_log("Current update_app_header version is: %x",
+  custom_logger_log("Current update_app_header version is: %x\r\n",
                     get_update_header()->version);
 
-  return (get_update_header()->version >= get_app_header()->version);
+  return (get_update_header()->version > get_app_header()->version);
 }
 
-bool bl_swap_updates(void) {
+bool bl_apply_update(void) {
   /* verify if the app from update is valid */
   enum verify_result_t res = bl_verify_app(get_update_header());
   if (res != VERIFY_OK) {
@@ -75,22 +79,12 @@ bool bl_swap_updates(void) {
   if (!ret) {
     custom_logger_log("fw_copy_to_address failed in copying\r\n");
   }
-  //   uint8_t *src = (uint8_t *)UPDATE_STORAGE_START_ADDR;
-  //   uint8_t fw_buf[COPY_BUFFER_SIZE];
-  //   uint32_t bytes_copied = 0;
-  //   uint32_t fw_size = get_update_header()->size + APP_HEADER_SIZE;
-  //   uint32_t flash_write_addr = APP_HEADER_ADDR;
-  //   int32_t chunk;
-
-  //   while (bytes_copied < fw_size) {
-  //     chunk = (fw_size - bytes_copied) < COPY_BUFFER_SIZE ? (fw_size -
-  //     bytes_copied) : COPY_BUFFER_SIZE; memcpy(fw_buf, src + bytes_copied,
-  //     chunk); Flash_Write_Data(flash_write_addr, (uint32_t *)fw_buf, chunk /
-  //     4); flash_write_addr += chunk; bytes_copied += chunk;
-  //   }
-
   return true;
   //
+}
+
+bool bl_clear_update_sector(void) {
+  return Flash_Erase_Sectors(FLASH_SECTOR_6, 1) != HAL_FLASH_ERROR_NONE;
 }
 
 bool bl_swap_partitions(void) {

@@ -24,10 +24,10 @@ void otw_packet_parser_init(struct otw_packet_parser_t *pp,
 }
 
 void otw_packet_parser_reset(struct otw_packet_parser_t *pp) {
-  /* TODO:  not sure if this will reset it nicely */
   struct ring_buffer_t *rb = pp->rb;
   TIM_HandleTypeDef *timer = pp->timer;
 
+  /* zero out everything, then set rb and timer to previous values */
   *pp = (struct otw_packet_parser_t){
       .rb = rb,
       .timer = timer,
@@ -43,15 +43,15 @@ void otw_packet_parser_timeout_callback(struct otw_packet_parser_t *pp,
     return;
   }
 
-  timer_stop(pp);
-  pp->timeout = true;
+  // timer_stop(pp);
+  // pp->timeout = true;
 }
 enum otw_parse_result_t
 otw_packet_parser_update(struct otw_packet_parser_t *pp) {
-  
-  if (pp->timeout) {
-    return OTW_PARSE_RESULT_ERROR;
-  }
+
+  // if (pp->timeout) {
+  //   return OTW_PARSE_RESULT_ERROR;
+  // }
 
   uint8_t byte;
   while (rb_get(pp->rb, &byte)) {
@@ -59,7 +59,7 @@ otw_packet_parser_update(struct otw_packet_parser_t *pp) {
       pp->receiving = true;
     }
     /* new byte, reset the timer */
-    //timer_reset(pp);
+    timer_reset(pp);
 
     switch (pp->state) {
     case OTW_PARSE_STATE_CMD: {

@@ -4,13 +4,13 @@
 #include <stdarg.h>
 #include <stdio.h>
 
-static UART_HandleTypeDef *huart;
+static UART_HandleTypeDef *_logger_huart;
 
-int custom_logger_init(UART_HandleTypeDef *huart1){
-    if(!huart){
-        huart = huart1;
-    }
-    return 0;
+int custom_logger_init(UART_HandleTypeDef *huart) {
+  if (!_logger_huart) {
+    _logger_huart = huart;
+  }
+  return 0;
 }
 
 void custom_logger_log(const char *fmt, ...) {
@@ -19,5 +19,5 @@ void custom_logger_log(const char *fmt, ...) {
   va_start(args, fmt);
   vsnprintf(buf, sizeof(buf), fmt, args);
   va_end(args);
-  HAL_UART_Transmit(huart, (uint8_t *)buf, (uint16_t)strlen(buf), 100);
+  HAL_UART_Transmit_IT(_logger_huart, (uint8_t *)buf, (uint16_t)strlen(buf));
 }
