@@ -36,40 +36,82 @@ static void reset_buffer(struct update_packet_parser_t *parser) {
   parser->buffer[0] = '\0';
 }
 
+static bool packet_parser_check_size(struct update_packet_parser_t *parser) {
+  if (parser->idx < 2 || parser->idx > UPDATE_PACKET_BUFFER_SIZE) {
+    custom_logger_log("Error: packet size problem, size is {%d}\r\n",
+                      parser->idx);
+    reset_buffer(parser);
+    parser->cb_nack();
+    return false;
+  }
+  return true;
+}
+
+static bool packet_parser_compare_crc(struct update_packet_parser_t *parser) {
+
+  uint16_t calculated_crc16 = crc16(parser->buffer, parser->idx - 2);
+  uint16_t expected_crc16 =
+      parser->buffer[parser->idx - 2] | (parser->buffer[parser->idx - 1] << 8);
+
+  if (calculated_crc16 != expected_crc16) {
+    custom_logger_log("Missmatch in crc16; expected: %d,\tactual: %d\r\n",
+                      expected_crc16, calculated_crc16);
+
+    reset_buffer(parser);
+    parser->cb_nack();
+    return false;
+  }
+  return true;
+}
+
+static bool packet_parser_write_chunk(struct update_packet_parser_t *parser) {
+
+  uint16_t words_to_write = (parser->idx - 2) / 4;
+
+  uint32_t res = Flash_Write_Data(UPDATE_STORAGE_START_ADDR + parser->write_idx,
+                                  (uint32_t *)parser->buffer, words_to_write);
+
+  if (res != HAL_FLASH_ERROR_NONE) {
+    custom_logger_log("Problem during flash write\r\n");
+    reset_buffer(parser);
+    return false;
+  }
+  parser->write_idx += parser->idx - UPDATE_PACKET_HEADER_SIZE;
+
+  return true;
+}
+
+static void packet_parser_check_rx_end(struct update_packet_parser_t *parser) {
+  if (parser->write_idx == parser->fw_size) {
+    // mark tx as done, rr system
+    HAL_Delay(1000);
+    custom_logger_log("Restarting system...\r\n");
+    HAL_Delay(1000);
+    HAL_NVIC_SystemReset();
+  }
+}
+
 bool update_packet_parser_parse(struct update_packet_parser_t *parser) {
 
   if (parser->rx_done) {
     parser->rx_done = false;
 
-    if (parser->idx < 2 || parser->idx > UPDATE_PACKET_BUFFER_SIZE) {
+    if (!packet_parser_check_size(parser)) {
       custom_logger_log("Error: packet size problem, size is {%d}\r\n",
                         parser->idx);
-      reset_buffer(parser);
-      parser->cb_nack();
       return false;
     }
 
     // custom_logger_log("Parser done let me print\r\n");
     // parser->buffer[parser->idx] = '\0';
     // custom_logger_log("Message: %s", parser->buffer);
-    uint16_t calculated_crc16 = crc16(parser->buffer, parser->idx - 2);
-    uint16_t expected_crc16 = parser->buffer[parser->idx - 2] |
-                              (parser->buffer[parser->idx - 1] << 8);
 
-    // parser->idx = 0;
-    // parser->buffer[0] = '\0';
-
-    if (calculated_crc16 != expected_crc16) {
-      custom_logger_log("Missmatch in crc16; expected: %d,\tactual: %d\r\n",
-                        expected_crc16, calculated_crc16);
-
-      reset_buffer(parser);
-      parser->cb_nack();
-      return false;
-    }
-
+    packet_parser_compare_crc(parser);
     /* checking here if its the first package, if yes i need to erase the FLASH
      * sector and also grab the firmware size */
+
+    /* writing chunks */
+
     if (parser->erase_flag) {
 
       Flash_Erase_Sectors(FLASH_SECTOR_6, 1);
@@ -81,34 +123,12 @@ bool update_packet_parser_parse(struct update_packet_parser_t *parser) {
       parser->erase_flag = false;
     }
 
-    // custom_logger_log("Crc16 is matching\r\n");
+    packet_parser_write_chunk(parser);
 
-    // memcpy(parser->write_buffer, parser->buffer, UPDATE_PACKET_BUFFER_SIZE);
-
-    /* before sending ACK i need to write what i got into the flash i guess, ill
-     * do it here for now, will improve later TODO: */
-
-    uint16_t words_to_write = (parser->idx - 2) / 4;
-
-    Flash_Write_Data(UPDATE_STORAGE_START_ADDR + parser->write_idx,
-                     (uint32_t *)parser->buffer, words_to_write);
-
-    // custom_logger_log("write idx: {%d}\t parser idx: {%d-2}",
-    // parser->write_idx,
-    //                   parser->idx);
-    parser->write_idx += parser->idx - UPDATE_PACKET_HEADER_SIZE;
+    packet_parser_check_rx_end(parser);
 
     reset_buffer(parser);
-    // custom_logger_log("fw size: {%d}\twrite_idx: {%d}\r\n", parser->fw_size,
-    //                   parser->write_idx);
-
     parser->cb_ack();
-
-    if (parser->write_idx == parser->fw_size) {
-      // mark tx as done, rr system
-      HAL_Delay(1000);
-      HAL_NVIC_SystemReset();
-    }
 
     return true;
   }
