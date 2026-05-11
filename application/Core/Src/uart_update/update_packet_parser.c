@@ -1,10 +1,10 @@
 #include "uart_update/update_packet_parser.h"
 
+#include "app_header.h"
 #include "custom_crc/custom_crc32.h"
 #include "custom_logger.h"
 #include "flash/operations.h"
 #include "flash_layout.h"
-
 #include <string.h>
 
 void update_packet_parser_init(struct update_packet_parser_t *parser,
@@ -16,6 +16,7 @@ void update_packet_parser_init(struct update_packet_parser_t *parser,
   parser->rx_done = false;
   parser->idx = 0;
   parser->write_idx = 0;
+  parser->erase_flag = true;
   /*  void *memset(size_t n;
                   void s[n], int c, size_t n);
 
@@ -36,6 +37,7 @@ static void reset_buffer(struct update_packet_parser_t *parser) {
 }
 
 bool update_packet_parser_parse(struct update_packet_parser_t *parser) {
+
   if (parser->rx_done) {
     parser->rx_done = false;
 
@@ -47,9 +49,9 @@ bool update_packet_parser_parse(struct update_packet_parser_t *parser) {
       return false;
     }
 
-    custom_logger_log("Parser done let me print\r\n");
-    parser->buffer[parser->idx] = '\0';
-    custom_logger_log("Message: %s", parser->buffer);
+    // custom_logger_log("Parser done let me print\r\n");
+    // parser->buffer[parser->idx] = '\0';
+    // custom_logger_log("Message: %s", parser->buffer);
     uint16_t calculated_crc16 = crc16(parser->buffer, parser->idx - 2);
     uint16_t expected_crc16 = parser->buffer[parser->idx - 2] |
                               (parser->buffer[parser->idx - 1] << 8);
@@ -66,7 +68,20 @@ bool update_packet_parser_parse(struct update_packet_parser_t *parser) {
       return false;
     }
 
-    custom_logger_log("Crc16 is matching\r\n");
+    /* checking here if its the first package, if yes i need to erase the FLASH
+     * sector and also grab the firmware size */
+    if (parser->erase_flag) {
+
+      Flash_Erase_Sectors(FLASH_SECTOR_6, 1);
+
+      struct app_header_t *hdr = (struct app_header_t *)parser->buffer;
+
+      parser->fw_size = hdr->size + APP_HEADER_SIZE;
+
+      parser->erase_flag = false;
+    }
+
+    // custom_logger_log("Crc16 is matching\r\n");
 
     // memcpy(parser->write_buffer, parser->buffer, UPDATE_PACKET_BUFFER_SIZE);
 
@@ -78,12 +93,22 @@ bool update_packet_parser_parse(struct update_packet_parser_t *parser) {
     Flash_Write_Data(UPDATE_STORAGE_START_ADDR + parser->write_idx,
                      (uint32_t *)parser->buffer, words_to_write);
 
-    custom_logger_log("write idx: {%d}\t parser idx: {%d-2}", parser->write_idx,
-                      parser->idx);
+    // custom_logger_log("write idx: {%d}\t parser idx: {%d-2}",
+    // parser->write_idx,
+    //                   parser->idx);
     parser->write_idx += parser->idx - UPDATE_PACKET_HEADER_SIZE;
 
     reset_buffer(parser);
+    // custom_logger_log("fw size: {%d}\twrite_idx: {%d}\r\n", parser->fw_size,
+    //                   parser->write_idx);
+
     parser->cb_ack();
+
+    if (parser->write_idx == parser->fw_size) {
+      // mark tx as done, rr system
+      HAL_Delay(1000);
+      HAL_NVIC_SystemReset();
+    }
 
     return true;
   }

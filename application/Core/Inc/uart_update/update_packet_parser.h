@@ -26,8 +26,10 @@ struct update_packet_parser_t {
   volatile uint16_t idx;
   volatile bool rx_done;
 
-  char write_buffer[UPDATE_PACKET_BUFFER_SIZE];
   uint32_t write_idx;
+
+  bool erase_flag;
+  uint32_t fw_size;
 
   void (*cb_ack)(void);
   void (*cb_nack)(void);

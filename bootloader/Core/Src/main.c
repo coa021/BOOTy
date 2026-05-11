@@ -100,7 +100,7 @@ int main(void) {
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
 
-  custom_logger_init(&huart2);
+  custom_logger_init(&huart1);
   /* TODO: Will verify later */
   custom_logger_log("Entering bootloader.\r\n");
 
