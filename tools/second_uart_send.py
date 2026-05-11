@@ -4,6 +4,7 @@ import time
 import zlib  # for crc32
 import crcmod  # for crc16
 
+
 def custom_crc32(data):
     crc = zlib.crc32(data) & 0xFFFFFFFF
     return struct.pack("<I", crc)
@@ -25,7 +26,7 @@ firmware = bytearray(firmware)
 firmware_size = len(firmware)
 
 ser = serial.Serial(
-    port="/dev/ttyUSB0",
+    port="/dev/ttyUSB1",
     baudrate=115200,
     parity=serial.PARITY_NONE,
     stopbits=serial.STOPBITS_ONE,
@@ -33,18 +34,15 @@ ser = serial.Serial(
     timeout=2,
 )
 
-
-sent = 0
 print("tryint to send stuff")
-# while sent < firmware_size:
-#     chunk = bytes(firmware[sent : sent + 256])
-#     crc = custom_crc16(chunk)
+sent = 0
+# payload = b"Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer "
 
-#     payload = bytes(chunk + crc)
-#     print(f"Trying to send following: {payload}\n\n")
+# payload_len = len(payload)
+# while sent < payload_len:
+#     chunk = bytes(payload[sent : sent + 256])
 
-#     ser.write(payload)
-
+#     ser.write(chunk)
 #     response = ser.read(1)
 #     if not response:
 #         print("Timeout waiting for ACK")
@@ -59,10 +57,30 @@ print("tryint to send stuff")
 #         print("NACK received")
 #         continue
 #     time.sleep(0.5)
+while sent < firmware_size:
+    chunk = bytes(firmware[sent : sent + 256])
+    crc = custom_crc16(chunk)
 
+    payload = bytes(chunk + crc)
+    print(f"Trying to send following: {payload}\n\n")
 
-payload = bytes(chunk + crc)
-ser.write(payload)
+    ser.write(payload)
+
+    response = ser.read(1)
+    if not response:
+        print("Timeout waiting for ACK")
+        break
+
+    byte = response[0]
+    if byte == ACK:
+        print("ACK")
+        sent += len(chunk)
+        print(f"Sent {sent} / {firmware_size}")
+    elif byte == NACK:
+        print("NACK received")
+        continue
+    # time.sleep(0.1)
+
 
 time.sleep(1)
 
