@@ -19,5 +19,6 @@ void custom_logger_log(const char *fmt, ...) {
   va_start(args, fmt);
   vsnprintf(buf, sizeof(buf), fmt, args);
   va_end(args);
-  HAL_UART_Transmit_IT(_logger_huart, (uint8_t *)buf, (uint16_t)strlen(buf));
+  HAL_UART_Transmit(_logger_huart, (uint8_t *)buf, (uint16_t)strlen(buf),
+                    0xFFFF);
 }

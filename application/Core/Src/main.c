@@ -34,7 +34,8 @@
 #include "updates/otw_uart_receiver.h"
 #include "updates/otw_update.h"
 
-#include "custom_crc/custom_crc32.h"
+// my stuff
+#include "uart_update/update_packet_parser.h"
 
 /* USER CODE END Includes */
 
@@ -90,15 +91,10 @@ char huart2_rx_buffer;
 
 volatile bool print_flag = false;
 
-char my_buffer[256];
-volatile char uart1_rx_byte;
-volatile uint8_t buffer_idx=0;
+struct update_packet_parser_t packet_parser;
 
-
-volatile bool flag_check_crc16 = false;
-
-const char _ACK = 0x01;
-const char _NACK = 0x15;
+void update_packet_parser_cb_ack(void);
+void update_packet_parser_cb_nack(void);
 
 /* USER CODE END 0 */
 
@@ -135,6 +131,11 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
   /* initializations */
+
+  update_packet_parser_init(&packet_parser, &huart1, &htim1,
+                            update_packet_parser_cb_ack,
+                            update_packet_parser_cb_nack);
+
   custom_logger_init(&huart2);
   // rb_init(&rx_ring);
   // otw_uart_receiver_init(&receiver, &rx_ring, &huart1);
@@ -144,7 +145,8 @@ int main(void)
   custom_logger_log("\nHello from application v0\n");
 
   HAL_UART_Receive_IT(&huart2, &huart2_rx_buffer, 1);
-  HAL_UART_Receive_IT(&huart1, &uart1_rx_byte, 1);
+  // TODO: Refactor this, make some callback or something, or do it in init?
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -156,21 +158,30 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
 
-	  if(flag_check_crc16) {
+    if (update_packet_parser_parse(&packet_parser)) {
+      custom_logger_log("Received a chunk to parse\r\n");
+    }
 
-		  // check crc
-		  uint16_t calculated_crc16 = crc16(my_buffer, buffer_idx);
-		  uint16_t expected_crc16 = my_buffer[buffer_idx-2] | (my_buffer[buffer_idx-1]<<8);
+    // custom_logger_log("My rx buffer: %d", (uint8_t)packet_parser.rx_byte);
 
-		  if(calculated_crc16 != expected_crc16){
-			  custom_logger_log("Missmatch in crc16; expected: %d,\tactual: %d\r\n", expected_crc16, calculated_crc16);
-			  HAL_UART_Transmit_IT(&huart1, &_NACK, 1);
-		  }
+    // if (flag_check_crc16) {
 
-		  custom_logger_log("Crc16 is matching\r\n");
-		  HAL_UART_Transmit_IT(&huart1, &_ACK, 1);
-		  flag_check_crc16 = false;
-	  }
+    //   // check crc
+    //   uint16_t calculated_crc16 = crc16(my_buffer, buffer_idx);
+    //   uint16_t expected_crc16 =
+    //       my_buffer[buffer_idx - 2] | (my_buffer[buffer_idx - 1] << 8);
+
+    //   if (calculated_crc16 != expected_crc16) {
+    //     custom_logger_log("Missmatch in crc16; expected: %d,\tactual:
+    //     %d\r\n",
+    //                       expected_crc16, calculated_crc16);
+    //     HAL_UART_Transmit_IT(&huart1, &_NACK, 1);
+    //   }
+
+    //   custom_logger_log("Crc16 is matching\r\n");
+    //   HAL_UART_Transmit_IT(&huart1, &_ACK, 1);
+    //   flag_check_crc16 = false;
+    // }
     // result = otw_packet_parser_update(&parser);
 
     // switch (result) {
@@ -195,8 +206,6 @@ int main(void)
     // default:
     //   break;
     // }
-
-
 
     if (HAL_GetTick() - last_blink >= 150) {
       last_blink = HAL_GetTick();
@@ -429,31 +438,18 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
     // Flash_Erase_Sectors(FLASH_SECTOR_2, 2);
     custom_logger_log("Button clicked\n");
     HAL_GPIO_WritePin(TIMER_TEST_BTN_GPIO_Port, TIMER_TEST_BTN_Pin, 1);
-    print_flag=true;
   }
 }
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
   // otw_uart_receiver_rx_cplt_callback(huart);
 
-  if (huart->Instance == huart1.Instance) {
-	  HAL_UART_Receive_IT(&huart1, &uart1_rx_byte, 1);
-//    HAL_UART_Transmit_IT(&huart2, &uart1_rx_byte, 1
-
-      HAL_TIM_Base_Stop_IT(&htim1);
-//    __HAL_TIM_SET_COUNTER(&htim1, 0);
-//    CLEAR_BIT(htim1.Instance->CR1, TIM_CR1_OPM);
-
-    my_buffer[buffer_idx++] = uart1_rx_byte;
-
-    HAL_TIM_Base_Start_IT(&htim1);
-  }
+  update_packet_parser_uart_callback(&packet_parser, huart);
 
   if (huart->Instance == huart2.Instance) {
-//    HAL_TIM_Base_Start_IT(&htim1);
-    HAL_UART_Receive_IT(&huart2, &huart2_rx_buffer, 1);
+    //    HAL_TIM_Base_Start_IT(&htim1);
+    // HAL_UART_Receive_IT(&huart2, &huart2_rx_buffer, 1);
     HAL_UART_Transmit(&huart2, &huart2_rx_buffer, 1, 0xffff);
-
   }
 }
 
@@ -465,24 +461,18 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size) {
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
   // otw_packet_parser_timeout_callback(&parser, htim);
-  if (htim->Instance == htim1.Instance) {
-    // os timer sent interrupt
-    // i would need to restart it
 
-    HAL_TIM_Base_Stop_IT(htim);
+  update_packet_parser_tim_callback(&packet_parser, htim);
+}
 
-    if(buffer_idx > 0) {
-       	// i received whole chunk i need to tell timer to print it by disabling it
-    	HAL_UART_Transmit_IT(&huart1, &_ACK, 1);
-    	custom_logger_log("Message: %s\r\n", my_buffer);
-    	my_buffer[0]= '\0';
-    	buffer_idx = 0;
-    	flag_check_crc16 = true;
-       } else {
-    	   custom_logger_log("Nack\r\n");
-    	   HAL_UART_Transmit_IT(&huart1, &_NACK, 1);
-       }
-  }
+void update_packet_parser_cb_ack(void) {
+  static uint8_t _ack = UPDATE_PACKET_ACK;
+  HAL_UART_Transmit_IT(packet_parser.huart, &_ack, 1);
+}
+
+void update_packet_parser_cb_nack(void) {
+  static uint8_t _nack = UPDATE_PACKET_NACK;
+  HAL_UART_Transmit_IT(packet_parser.huart, &_nack, 1);
 }
 
 /* USER CODE END 4 */

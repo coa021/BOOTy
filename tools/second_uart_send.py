@@ -2,14 +2,17 @@ import serial
 import struct
 import time
 import zlib  # for crc32
-import crc16 # crc 16
+import crcmod  # for crc16
 
 def custom_crc32(data):
     crc = zlib.crc32(data) & 0xFFFFFFFF
     return struct.pack("<I", crc)
 
+
 def custom_crc16(data):
-    return crc16.crc16xmodem(data)
+    crc16_func = crcmod.mkCrcFun(0x18005, rev=True, initCrc=0xFFFF, xorOut=0x0000)
+    crc = crc16_func(data)
+    return struct.pack("<H", crc)  # 2bytes, little endian
 
 
 ACK = 0x01
@@ -33,28 +36,33 @@ ser = serial.Serial(
 
 sent = 0
 print("tryint to send stuff")
-while sent < firmware_size:
-    chunk = bytes(firmware[sent : sent + 256])
-    # crc = custom_crc16(chunk)
+# while sent < firmware_size:
+#     chunk = bytes(firmware[sent : sent + 256])
+#     crc = custom_crc16(chunk)
 
-    payload = bytes(chunk)
-    ser.write(payload)
+#     payload = bytes(chunk + crc)
+#     print(f"Trying to send following: {payload}\n\n")
 
-    response = ser.read(1)
-    if not response:
-        print("Timeout waiting for ACK")
+#     ser.write(payload)
 
-    byte = response[0]
-    if byte == ACK:
-        print("ACK")
-        sent += len(payload)
-        print(f"Sent {sent} / {firmware_size}")
-        time.sleep(0.5)
-    elif byte == NACK:
-        print("NACK received")
-        continue
+#     response = ser.read(1)
+#     if not response:
+#         print("Timeout waiting for ACK")
+#         break
+
+#     byte = response[0]
+#     if byte == ACK:
+#         print("ACK")
+#         sent += len(chunk)
+#         print(f"Sent {sent} / {firmware_size}")
+#     elif byte == NACK:
+#         print("NACK received")
+#         continue
+#     time.sleep(0.5)
 
 
+payload = bytes(chunk + crc)
+ser.write(payload)
 
 time.sleep(1)
 

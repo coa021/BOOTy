@@ -61,6 +61,8 @@ otw_packet_parser_update(struct otw_packet_parser_t *pp) {
     /* new byte, reset the timer */
     timer_reset(pp);
 
+    // cmd | len lower nibble| higher nibble |
+
     switch (pp->state) {
     case OTW_PARSE_STATE_CMD: {
       pp->packet.cmd = byte;
