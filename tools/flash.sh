@@ -23,7 +23,7 @@ info() {
 sign_application() {
     local app_bin="$1"
     info "Signing application binary..."
-    python3 "$SIGN_SCRIPT" sign --input "$app_bin" --version 1.0
+    python3 "$SIGN_SCRIPT" sign --input "$app_bin" --version 0.1
 }
 
 flash_bootloader() {

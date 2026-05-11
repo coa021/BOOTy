@@ -2,6 +2,8 @@
 
 #include "custom_crc/custom_crc32.h"
 #include "custom_logger.h"
+#include "flash/operations.h"
+#include "flash_layout.h"
 
 #include <string.h>
 
@@ -13,6 +15,7 @@ void update_packet_parser_init(struct update_packet_parser_t *parser,
   parser->tim = tim;
   parser->rx_done = false;
   parser->idx = 0;
+  parser->write_idx = 0;
   /*  void *memset(size_t n;
                   void s[n], int c, size_t n);
 
@@ -27,9 +30,22 @@ by s with the constant byte c. */
   HAL_UART_Receive_IT(parser->huart, &parser->rx_byte, 1);
 }
 
+static void reset_buffer(struct update_packet_parser_t *parser) {
+  parser->idx = 0;
+  parser->buffer[0] = '\0';
+}
+
 bool update_packet_parser_parse(struct update_packet_parser_t *parser) {
   if (parser->rx_done) {
     parser->rx_done = false;
+
+    if (parser->idx < 2 || parser->idx > UPDATE_PACKET_BUFFER_SIZE) {
+      custom_logger_log("Error: packet size problem, size is {%d}\r\n",
+                        parser->idx);
+      reset_buffer(parser);
+      parser->cb_nack();
+      return false;
+    }
 
     custom_logger_log("Parser done let me print\r\n");
     parser->buffer[parser->idx] = '\0';
@@ -38,19 +54,35 @@ bool update_packet_parser_parse(struct update_packet_parser_t *parser) {
     uint16_t expected_crc16 = parser->buffer[parser->idx - 2] |
                               (parser->buffer[parser->idx - 1] << 8);
 
-    parser->idx = 0;
-    parser->buffer[0] = '\0';
+    // parser->idx = 0;
+    // parser->buffer[0] = '\0';
 
-       if (calculated_crc16 != expected_crc16) {
-         custom_logger_log("Missmatch in crc16; expected: %d,\tactual:
-         %d\r\n",
-                           expected_crc16, calculated_crc16);
-         parser->cb_nack();
-         return false;
-       }
+    if (calculated_crc16 != expected_crc16) {
+      custom_logger_log("Missmatch in crc16; expected: %d,\tactual: %d\r\n",
+                        expected_crc16, calculated_crc16);
+
+      reset_buffer(parser);
+      parser->cb_nack();
+      return false;
+    }
 
     custom_logger_log("Crc16 is matching\r\n");
 
+    // memcpy(parser->write_buffer, parser->buffer, UPDATE_PACKET_BUFFER_SIZE);
+
+    /* before sending ACK i need to write what i got into the flash i guess, ill
+     * do it here for now, will improve later TODO: */
+
+    uint16_t words_to_write = (parser->idx - 2) / 4;
+
+    Flash_Write_Data(UPDATE_STORAGE_START_ADDR + parser->write_idx,
+                     (uint32_t *)parser->buffer, words_to_write);
+
+    custom_logger_log("write idx: {%d}\t parser idx: {%d-2}", parser->write_idx,
+                      parser->idx);
+    parser->write_idx += parser->idx - UPDATE_PACKET_HEADER_SIZE;
+
+    reset_buffer(parser);
     parser->cb_ack();
 
     return true;

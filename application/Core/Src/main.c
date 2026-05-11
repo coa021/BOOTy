@@ -157,7 +157,8 @@ int main(void) {
     /* USER CODE BEGIN 3 */
 
     if (update_packet_parser_parse(&packet_parser)) {
-      custom_logger_log("Received a chunk to parse\r\n");
+      custom_logger_log("Received a chunk\r\n");
+      /* i can store it into flash */
     }
 
     // custom_logger_log("My rx buffer: %d", (uint8_t)packet_parser.rx_byte);
@@ -425,14 +426,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
   // otw_uart_receiver_rx_cplt_callback(huart);
-
   update_packet_parser_uart_callback(&packet_parser, huart);
-
-  if (huart->Instance == huart1.Instance) {
-    //    HAL_TIM_Base_Start_IT(&htim1);
-    // HAL_UART_Receive_IT(&huart2, &huart2_rx_buffer, 1);
-    HAL_UART_Transmit_IT(&huart1, &huart2_rx_buffer, 1);
-  }
 }
 
 void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size) {

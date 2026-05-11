@@ -36,29 +36,28 @@ ser = serial.Serial(
 
 print("tryint to send stuff")
 sent = 0
-# payload = b"Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer Hello world what is the limit of the rx buffer "
+BUFFER_SIZE = 256
 
-# payload_len = len(payload)
-# while sent < payload_len:
-#     chunk = bytes(payload[sent : sent + 256])
 
-#     ser.write(chunk)
-#     response = ser.read(1)
-#     if not response:
-#         print("Timeout waiting for ACK")
-#         break
+# message = b"Hello world how are you?"
+# crc = custom_crc16(message)
 
-#     byte = response[0]
-#     if byte == ACK:
-#         print("ACK")
-#         sent += len(chunk)
-#         print(f"Sent {sent} / {firmware_size}")
-#     elif byte == NACK:
-#         print("NACK received")
-#         continue
-#     time.sleep(0.5)
+# payload = message + crc
+
+# ser.write(payload)
+# response = ser.read(1)
+# if not response:
+#     print("Timeout waiting for ACK")
+
+# byte = response[0]
+# if byte == ACK:
+#     print("ACK")
+#     sent += len(chunk)
+#     print(f"Sent {sent} / {firmware_size}")
+# elif byte == NACK:
+#     print("NACK received")
 while sent < firmware_size:
-    chunk = bytes(firmware[sent : sent + 256])
+    chunk = bytes(firmware[sent : sent + BUFFER_SIZE])
     crc = custom_crc16(chunk)
 
     payload = bytes(chunk + crc)
@@ -78,8 +77,6 @@ while sent < firmware_size:
         print(f"Sent {sent} / {firmware_size}")
     elif byte == NACK:
         print("NACK received")
-        continue
-    # time.sleep(0.1)
 
 
 time.sleep(1)
