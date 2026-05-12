@@ -119,9 +119,9 @@ int main(void) {
     if (bl_apply_update()) {
       // if (bl_swap_partitions()) {
       custom_logger_log("[BL]: Swap successfull\n");
-      bl_clear_update_sector();
-      custom_logger_log("[BL]: Update sector cleared.Removed firmware from "
-                        "update sector\r\n");
+      // bl_clear_update_sector();
+      // custom_logger_log("[BL]: Update sector cleared.Removed firmware from "
+      // "update sector\r\n");
     } else {
       custom_logger_log("[BL]: Swap NOT!!!! successfull\n");
     }
@@ -135,9 +135,30 @@ int main(void) {
       bl_verify_app((const struct app_header_t *)APP_HEADER_ADDR);
   if (res != VERIFY_OK) {
     custom_logger_log("BOOTy: Verification failed: %d\r\n", res);
-    while (1) {
-      HAL_GPIO_TogglePin(LED_INDICATOR_GPIO_Port, LED_INDICATOR_Pin);
-      HAL_Delay(2000);
+
+    // TODO: Add some fallback, if the main app fails and there is an update
+    // available, i would want to boot from it
+
+    /* this section here is fallback section, this would have to be moved
+     * someplace else TODO: */
+    /* logic is as follows: if there is anything in the update sector i want to
+     * check that and if its valid i want to jump to it, otherwise we are in
+     * hard fault blinking led and i dont have any other way to recover i guess
+     */
+    if (get_update_header()->magic == APP_MAGIC_CONSTANT) {
+      if (bl_apply_update()) {
+        custom_logger_log("[BL]: Swap successfull to an older version.\n");
+        // bl_clear_update_sector();
+        // custom_logger_log("[BL]: Update sector cleared.Removed firmware from
+        // " "update sector\r\n");
+      } else {
+        custom_logger_log("[BL]: Swap NOT!!!! successfull\n");
+      }
+    } else {
+      while (1) {
+        HAL_GPIO_TogglePin(LED_INDICATOR_GPIO_Port, LED_INDICATOR_Pin);
+        HAL_Delay(2000);
+      }
     }
   }
 

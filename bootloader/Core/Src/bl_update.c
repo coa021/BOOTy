@@ -63,7 +63,8 @@ bool bl_check_for_update(void) {
    * something so that the BL will check the update once again and write it once
    * again until it succeeds, i had an error where i moved a wire during copy
    * process and i cant boot into app anymore its stuck in BL XD */
-  return (get_update_header()->version >= get_app_header()->version);
+  /* TODO: Testing purposes, removed this to check fallback code */
+  return (get_update_header()->version > get_app_header()->version);
 }
 
 bool bl_apply_update(void) {
