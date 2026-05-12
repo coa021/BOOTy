@@ -141,7 +141,7 @@ int main(void) {
   // otw_packet_parser_init(&parser, &rx_ring, &htim1);
   // otw_update_init(&update, &huart1);
 
-  custom_logger_log("\nHello from application v3\n");
+  custom_logger_log("\nHello from application v1\n");
 
   /* USER CODE END 2 */
 

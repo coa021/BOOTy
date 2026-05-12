@@ -29,11 +29,14 @@ void update_packet_parser_init(struct update_packet_parser_t *parser,
 
 static void reset_buffer(struct update_packet_parser_t *parser) {
   parser->idx = 0;
-  parser->buffer[0] = '\0';
+  /* i was printing what was in the buffer, thats why i had null terminator
+   * here, now im not doing that */
+  // parser->buffer[0] = '\0';
 }
 
 static bool packet_parser_check_size(struct update_packet_parser_t *parser) {
-  if (parser->idx < 2 || parser->idx > UPDATE_PACKET_BUFFER_SIZE) {
+  if (parser->idx < UPDATE_PACKET_MIN_SIZE ||
+      parser->idx > UPDATE_PACKET_BUFFER_SIZE) {
     custom_logger_log("Error: packet size problem, size is {%d}\r\n",
                       parser->idx);
     reset_buffer(parser);
@@ -116,6 +119,9 @@ static void packet_parser_check_rx_end(struct update_packet_parser_t *parser) {
 
     /* TODO: Move this someplace else */
     if (!validate_app_crc32(parser)) {
+      /* im already doing this 2 lines before this fn call, i dont need it here
+       * honestly */
+      reset_buffer(parser);
       return;
     }
 
@@ -136,6 +142,14 @@ packet_parser_check_app_header(struct update_packet_parser_t *parser) {
     custom_logger_log("Error with app header in new package. Missing MAGIC "
                       "constant, couldn't verify integrity of header\r\n");
     // parser->tx_cb(&_NACK);
+    return false;
+  }
+
+  /* validate if the app can fit here, but what if the user changed the size in
+   * the header, i will have a problem then */
+  if ((hdr->size + APP_HEADER_SIZE) > UPDATE_STORAGE_MAX_SIZE) {
+    custom_logger_log("Error. Firmware cannot fit on the FLASH update sector. "
+                      "MAX Size is 256KB!\r\n");
     return false;
   }
 
@@ -246,8 +260,8 @@ void update_packet_parser_tim_callback(struct update_packet_parser_t *parser,
 
     HAL_TIM_Base_Stop_IT(parser->tim);
     custom_logger_log("Timer fired, idx=%d\r\n", parser->idx);
-    // GT 1 because i have to include crc i guess
-    if (parser->idx > 1) {
+    // CRC is 2 bytes, so i need at least 3 bytes package
+    if (parser->idx > 2) {
       // i received whole chunk i need to tell timer to print it by disabling it
       // HAL_UART_Transmit_IT(&huart1, &_ACK, 1);
       parser->rx_done = true;

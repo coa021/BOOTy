@@ -10,6 +10,8 @@
 #define UPDATE_PACKET_CHUNK_SIZE 256
 // length and crc16?
 #define UPDATE_PACKET_HEADER_SIZE 2
+// 1 is for data
+#define UPDATE_PACKET_MIN_SIZE (UPDATE_PACKET_HEADER_SIZE + 1)
 #define UPDATE_PACKET_BUFFER_SIZE                                              \
   UPDATE_PACKET_CHUNK_SIZE + UPDATE_PACKET_HEADER_SIZE
 
