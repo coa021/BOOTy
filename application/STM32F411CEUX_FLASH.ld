@@ -47,8 +47,8 @@ _Min_Stack_Size = 0x400; /* required amount of stack */
 MEMORY
 {
   RAM    (xrw)    : ORIGIN = 0x20000000,   LENGTH = 128K
-  /* TODO: When doing OTA updates, i would need to change the LENGTH here since idk how i will split the flash sectors*/
-  FLASH    (rx)    : ORIGIN = __APP_FLASH_START,   LENGTH = 224K
+  FLASH    (rx)    : ORIGIN = __APP_FLASH_START,   LENGTH = __APP_MAIN_LENGTH
+  UPDATE_STORAGE (rw) : ORIGIN = __UPDATE_STORAGE_FLASH_START, LENGTH = __UPDATE_STORAGE_LENGTH
 }
 
 /* Sections */
@@ -136,6 +136,14 @@ SECTIONS
 
   /* Used by the startup to initialize data */
   _sidata = LOADADDR(.data);
+
+  .RamFunc :
+  {
+      . = ALIGN(4);
+      *(.RamFunc)
+      *(.RamFunc*)
+      . = ALIGN(4);
+  } >RAM AT> FLASH
 
   /* Initialized data sections into "RAM" Ram type memory */
   .data :

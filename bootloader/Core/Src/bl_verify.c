@@ -1,16 +1,20 @@
 #include "bl_verify.h"
-#include "custom_crc32.h"
+#include "custom_crc/custom_crc32.h"
 #include "main.h"
 #include "tinycrypt/ecc_dsa.h"
 #include "tinycrypt/sha256.h"
+#include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
 
 #include "custom_logger.h"
+#include "flash/operations.h"
 
 extern UART_HandleTypeDef huart1;
 
-/* TODO: For later usage. This will be version 1.0, first 4 bits are major version, second 4 are minor version. Will see how can i implement anti rollback for this one */
+/* TODO: For later usage. This will be version 1.0, first 4 bits are major
+ * version, second 4 are minor version. Will see how can i implement anti
+ * rollback for this one */
 #define MIN_VERSION 0x00010000U
 
 // clang-format off
@@ -32,10 +36,8 @@ static const uint8_t _PUBLIC_KEY[64] = {
 };
 // clang-format on
 
-enum verify_result_t bl_verify_app(void) {
-  const struct app_header_t *app_header =
-      (const struct app_header_t *)APP_HEADER_ADDR;
-
+enum verify_result_t bl_verify_app(const struct app_header_t *app_header) {
+  custom_logger_log("[BL]: bl_veify_app address: %x\r\n", app_header);
   custom_logger_log("[BL]: bl_verify_app: verify magic constant\r\n");
   /* Checking magic constant */
   if (app_header->magic != APP_MAGIC_CONSTANT) {
@@ -53,8 +55,16 @@ enum verify_result_t bl_verify_app(void) {
     we are doing our own crc calculation and comparing it to app header's crc
   */
 
+  /*
+  TODO: Critical error! I have sent half a package and bricked my device XD im
+  updating only when update version is GT main app version */
+
   custom_logger_log("[BL]: bl_verify_app: verify CRC check\r\n");
-  uint32_t crc = crc32((const uint8_t *)APP_START_ADDR, app_header->size);
+
+  custom_logger_log("[BL]: im checking address %x\r\n",
+                    (const uint8_t *)app_header + APP_HEADER_SIZE);
+  uint32_t crc =
+      crc32((const uint8_t *)app_header + APP_HEADER_SIZE, app_header->size);
   if (crc != app_header->crc) {
     return VERIFY_BAD_CRC;
   }
@@ -62,12 +72,11 @@ enum verify_result_t bl_verify_app(void) {
   uint8_t digest[32];
   struct tc_sha256_state_struct s;
   (void)tc_sha256_init(&s);
-  tc_sha256_update(&s, (const uint8_t *)APP_START_ADDR, app_header->size);
+  tc_sha256_update(&s, (const uint8_t *)app_header + APP_HEADER_SIZE,
+                   app_header->size);
   (void)tc_sha256_final(digest, &s);
 
-  char msg[100];
-  snprintf(msg, 100, "BOOTy: before ecdsa\r\n");
-  HAL_UART_Transmit(&huart1, (uint8_t *)msg, (uint16_t)strlen(msg), 100);
+  custom_logger_log("[BL]: before ecdsa\r\n");
 
   /* Signature */
   int ecdsa_res = uECC_verify(_PUBLIC_KEY, digest, sizeof(digest),
@@ -77,6 +86,7 @@ enum verify_result_t bl_verify_app(void) {
   if (ecdsa_res != 1) {
     return VERIFY_BAD_SIGNATURE;
   }
+
   custom_logger_log("[BL]: bl_verify_app: all ok\r\n");
 
   /* TODO:VERIFY_BAD_VERSION For later, add anti rollback guard */
