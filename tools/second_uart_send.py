@@ -25,6 +25,9 @@ with open("application_signed.bin", "rb") as f:
 firmware = bytearray(firmware)
 firmware_size = len(firmware)
 
+
+print(f"Firmware size is: {firmware_size}")
+
 ser = serial.Serial(
     port="/dev/ttyUSB2",
     baudrate=115200,
@@ -61,7 +64,7 @@ while sent < firmware_size:
     crc = custom_crc16(chunk)
 
     payload = bytes(chunk + crc)
-    print(f"Trying to send following: {payload}\n\n")
+    # print(f"Trying to send following: {payload}\n\n")
 
     ser.write(payload)
 
@@ -72,9 +75,9 @@ while sent < firmware_size:
 
     byte = response[0]
     if byte == ACK:
-        print("ACK")
+        # print("ACK")
         sent += len(chunk)
-        print(f"Sent {sent} / {firmware_size}")
+        print(f"Sent {sent} / {firmware_size}", sep="\r")
     elif byte == NACK:
         print("NACK received")
 

@@ -55,6 +55,10 @@ enum verify_result_t bl_verify_app(const struct app_header_t *app_header) {
     we are doing our own crc calculation and comparing it to app header's crc
   */
 
+  /*
+  TODO: Critical error! I have sent half a package and bricked my device XD im
+  updating only when update version is GT main app version */
+
   custom_logger_log("[BL]: bl_verify_app: verify CRC check\r\n");
   /* TODO: Fix magic constant, 512 is because thats the padding for the header
    */

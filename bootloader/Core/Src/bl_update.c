@@ -25,8 +25,6 @@ static bool fw_copy_to_address(uint32_t copy_start_addr,
   custom_logger_log("Entering fw_copy_to_address\r\n");
 
   while (bytes_copied < fw_app_size) {
-    custom_logger_log("Bytes copied: {%d} / {%d}\r\n", bytes_copied,
-                      fw_app_size);
 
     chunk = (fw_app_size - bytes_copied) < COPY_BUFFER_SIZE
                 ? (fw_app_size - bytes_copied)
@@ -46,6 +44,8 @@ static bool fw_copy_to_address(uint32_t copy_start_addr,
     /* we wrote full words, nothing is leftover */
     flash_write_addr += words * 4;
     bytes_copied += chunk;
+
+    custom_logger_log("Bytes copied: {%d} / {%d}\r", bytes_copied, fw_app_size);
   }
 
   custom_logger_log("fw_copy_to_sector succeeded in copying app\r\n");
@@ -59,7 +59,11 @@ bool bl_check_for_update(void) {
   custom_logger_log("Current update_app_header version is: %x\r\n",
                     get_update_header()->version);
 
-  return (get_update_header()->version > get_app_header()->version);
+  /* changed to >= just so i have fallback if update fails during write or
+   * something so that the BL will check the update once again and write it once
+   * again until it succeeds, i had an error where i moved a wire during copy
+   * process and i cant boot into app anymore its stuck in BL XD */
+  return (get_update_header()->version >= get_app_header()->version);
 }
 
 bool bl_apply_update(void) {
