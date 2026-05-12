@@ -21,11 +21,17 @@ ser = serial.Serial(
 sent >256 chunk to see how the device responds, naturally this will fail and retry the same chunk again and again, after 10? tries i should stop i guess
 send app without header
 send <2 chunk to see how the device responds
-send huge firmware size > flash sector
+send huge firmware size > flash sector, has to be >256KB firmware
 
 regarding app header tests: i have to check for invalid magic constant, version, fw size, crc32, signature. 
+send invalid crc32 in app header or something similar, change 1 byte of app so it fails here at the end
+
+
 
 crc checks, change it 
+
+
+how would i trigger errors during flash write part?
 
 
 """

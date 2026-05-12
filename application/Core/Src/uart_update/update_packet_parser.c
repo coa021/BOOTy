@@ -127,6 +127,26 @@ static void packet_parser_check_rx_end(struct update_packet_parser_t *parser) {
   }
 }
 
+static bool
+packet_parser_check_app_header(struct update_packet_parser_t *parser) {
+
+  struct app_header_t *hdr = (struct app_header_t *)parser->buffer;
+
+  if (hdr->magic != APP_MAGIC_CONSTANT) {
+    custom_logger_log("Error with app header in new package. Missing MAGIC "
+                      "constant, couldn't verify integrity of header\r\n");
+    // parser->tx_cb(&_NACK);
+    return false;
+  }
+
+  /* valid header TODO: This function is checking app header AND assigning
+   * firmware size, a bit problematic, doesnt imply it does that  */
+  parser->fw_size = hdr->size + APP_HEADER_SIZE;
+  parser->erase_flag = false;
+
+  return true;
+}
+
 static bool packet_parser_erase_sector(struct update_packet_parser_t *parser) {
 
   if (parser->erase_flag) {
@@ -145,67 +165,62 @@ static bool packet_parser_erase_sector(struct update_packet_parser_t *parser) {
     }
 
     /* TODO: Separate into functions */
-    struct app_header_t *hdr = (struct app_header_t *)parser->buffer;
 
-    if (hdr->magic != APP_MAGIC_CONSTANT) {
-      custom_logger_log("Error with app header in new package. Missing MAGIC "
-                        "constant, couldn't verify integrity of header\r\n");
-      // parser->tx_cb(&_NACK);
+    if (!packet_parser_check_app_header(parser)) {
+      custom_logger_log("Error during header check of the update app\r\n");
       return false;
     }
-
-    parser->fw_size = hdr->size + APP_HEADER_SIZE;
-    parser->erase_flag = false;
   }
   return true;
 }
 
 bool update_packet_parser_parse(struct update_packet_parser_t *parser) {
 
-  if (parser->rx_done) {
-    parser->rx_done = false;
-
-    /* check if package chunk size is valid */
-    if (!packet_parser_check_size(parser)) {
-      custom_logger_log("Error: packet size problem, size is {%d}\r\n",
-                        parser->idx);
-      return false;
-    }
-
-    /* compare crc16 of each received chunk */
-    if (!packet_parser_compare_crc(parser)) {
-      parser->tx_cb(&_NACK);
-      return false;
-    }
-
-    /* this is executed on the first package, and resetted on the last package
-     */
-    if (!packet_parser_erase_sector(parser)) {
-      custom_logger_log("Error, failed erasing sector, retrying..\r\n");
-      parser->tx_cb(&_NACK);
-      return false;
-    }
-
-    if (!packet_parser_write_chunk(parser)) {
-      custom_logger_log("Error, failed writing chunk\r\n");
-      parser->tx_cb(&_NACK);
-
-      return false;
-    }
-
-    reset_buffer(parser);
-    /* everything is ok so i can ACK this package and get the next chunk of
-     * data*/
-    parser->tx_cb(&_ACK);
-
-    /* TODO: Testing, moved this here so that i can confirm/ACK the last package
-     * i received and only after that do i check if we are at end of tx, since
-     * this will reboot the system */
-    packet_parser_check_rx_end(parser);
-
-    return true;
+  if (!parser->rx_done) {
+    return false;
   }
-  return false;
+
+  parser->rx_done = false;
+
+  /* check if package chunk size is valid */
+  if (!packet_parser_check_size(parser)) {
+    custom_logger_log("Error: packet size problem, size is {%d}\r\n",
+                      parser->idx);
+    return false;
+  }
+
+  /* compare crc16 of each received chunk */
+  if (!packet_parser_compare_crc(parser)) {
+    parser->tx_cb(&_NACK);
+    return false;
+  }
+
+  /* this is executed on the first package, and resetted on the last package
+   */
+  if (!packet_parser_erase_sector(parser)) {
+    custom_logger_log("Error, failed erasing sector, retrying..\r\n");
+    parser->tx_cb(&_NACK);
+    return false;
+  }
+
+  if (!packet_parser_write_chunk(parser)) {
+    custom_logger_log("Error, failed writing chunk\r\n");
+    parser->tx_cb(&_NACK);
+
+    return false;
+  }
+
+  reset_buffer(parser);
+  /* everything is ok so i can ACK this package and get the next chunk of
+   * data*/
+  parser->tx_cb(&_ACK);
+
+  /* TODO: Testing, moved this here so that i can confirm/ACK the last package
+   * i received and only after that do i check if we are at end of tx, since
+   * this will reboot the system */
+  packet_parser_check_rx_end(parser);
+
+  return true;
 }
 
 void update_packet_parser_uart_callback(struct update_packet_parser_t *parser,
