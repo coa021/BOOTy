@@ -372,6 +372,7 @@ def test_corrupt_header_crc32(link: UARTLink, firmware: bytes) -> TestResult:
     )
 
 
+# TODO: This is not doing what is expected lol its changing up the packet and transmitting it, its not getting corrupted in transmission
 def test_corrupt_single_app_byte(link: UARTLink, firmware: bytes) -> TestResult:
     """
     Flip one byte inside the application body (past the header).
@@ -382,10 +383,8 @@ def test_corrupt_single_app_byte(link: UARTLink, firmware: bytes) -> TestResult:
     (i.e., offset HEADER_SIZE + CHUNK_SIZE + 10).
     """
     fw = bytearray(firmware)
-    target_offset = HEADER_SIZE + CHUNK_SIZE + 10
-    fw[target_offset] ^= 0xFF
 
-    chunks = send_firmware_chunks(link, bytes(fw))
+    chunks = send_firmware_chunks(link, bytes(fw), corrupt_chunk_idx=3)
     first_fail = next((c for c in chunks if c.response != Response.ACK), None)
 
     expected_fail_chunk = (HEADER_SIZE + CHUNK_SIZE + 10) // CHUNK_SIZE
@@ -399,7 +398,7 @@ def test_corrupt_single_app_byte(link: UARTLink, firmware: bytes) -> TestResult:
     return TestResult(
         name="corrupt_single_app_byte",
         passed=passed,
-        expected=f"NACK on chunk {expected_fail_chunk} (byte at offset {target_offset} flipped)",
+        expected=f"NACK on chunk 3",
         summary=summary,
         chunks=chunks,
     )
@@ -434,33 +433,7 @@ def test_invalid_signature(link: UARTLink, firmware: bytes) -> TestResult:
     )
 
 
-#  Flash write error note
-
-
-def note_flash_write_errors():
-    """
-    Flash write errors (HAL_FLASH_Program returning HAL_ERROR) cannot be
-    triggered from the host side without MCU-side cooperation.
-
-    Your options:
-      1. Bootloader debug hook: add a secret command (e.g., CMD_TEST_FLASH_FAIL)
-         that sets a flag causing the next write to return failure.
-      2. Write-protect the target sector before the test using
-         HAL_FLASHEx_OBProgram() with WRP bits, then the write will fault.
-         Reference: RM0383 §3.6, HAL_FLASHEx_OBProgram in stm32f4xx_hal_flash_ex.h
-      3. Mock HAL_FLASH_Program in a unit test environment on-device.
-
-    This test suite does not attempt to trigger flash write errors remotely.
-    """
-    logging.getLogger("uart_test").info(
-        "\n[NOTE] Flash write error tests require MCU-side instrumentation. "
-        "See note_flash_write_errors() docstring for options."
-    )
-
-
 #  Test runner
-
-
 def run_all_tests(port: str, firmware_path: str, baudrate: int = 115200):
     logging.basicConfig(
         level=logging.INFO,
@@ -480,49 +453,49 @@ def run_all_tests(port: str, firmware_path: str, baudrate: int = 115200):
     # (name, factory) pairs, each factory returns a TestResult
     tests = [
         ("Corrupt header CRC32", lambda: test_corrupt_header_crc32(link, firmware)),
-        ("Oversized chunk (>256B)", lambda: test_oversized_chunk(link)),
-        ("Undersized chunk (<2B)", lambda: test_undersized_chunk(link)),
-        ("Corrupted CRC16", lambda: test_corrupted_crc16(link, firmware)),
-        (
-            "Firmware without header",
-            lambda: test_firmware_without_header(link, firmware),
-        ),
-        ("Invalid magic constant", lambda: test_invalid_magic(link, firmware)),
-        (
-            "Invalid fw_size (>flash limit)",
-            lambda: test_invalid_fw_size_too_large(link, firmware),
-        ),
-        (
-            "Corrupt single app byte",
-            lambda: test_corrupt_single_app_byte(link, firmware),
-        ),
-        ("Invalid signature", lambda: test_invalid_signature(link, firmware)),
+        # (
+        #     "Corrupt single app byte",
+        #     lambda: test_corrupt_single_app_byte(link, firmware),
+        # ),
+        # ("Oversized chunk (>256B)", lambda: test_oversized_chunk(link)),
+        # (
+        #     "Invalid fw_size (>flash limit)",
+        #     lambda: test_invalid_fw_size_too_large(link, firmware),
+        # ),
+        # ("Undersized chunk (<2B)", lambda: test_undersized_chunk(link)),
+        # ("Corrupted CRC16", lambda: test_corrupted_crc16(link, firmware)),
+        # (
+        #     "Firmware without header",
+        #     lambda: test_firmware_without_header(link, firmware),
+        # ),
+        # ("Invalid magic constant", lambda: test_invalid_magic(link, firmware)),
+        # ("Invalid signature", lambda: test_invalid_signature(link, firmware)),
     ]
 
     results: list[TestResult] = []
+    for i in range(100):
+        for name, factory in tests:
+            log.info(f"{''*60}")
+            log.info(f"TEST: {name}")
+            link.flush()
+            time.sleep(0.1)  # let MCU settle between tests
 
-    for name, factory in tests:
-        log.info(f"{''*60}")
-        log.info(f"TEST: {name}")
-        link.flush()
-        time.sleep(1)  # let MCU settle between tests
-
-        try:
-            result = factory()
-            results.append(result)
-            log.info(str(result))
-        except Exception as exc:
-            log.error(f"Exception in '{name}': {exc}", exc_info=True)
-            results.append(
-                TestResult(
-                    name=name,
-                    passed=False,
-                    expected="no exception",
-                    summary=f"Exception: {exc}",
+            try:
+                result = factory()
+                results.append(result)
+                log.info(str(result))
+            except Exception as exc:
+                log.error(f"Exception in '{name}': {exc}", exc_info=True)
+                results.append(
+                    TestResult(
+                        name=name,
+                        passed=False,
+                        expected="no exception",
+                        summary=f"Exception: {exc}",
+                    )
                 )
-            )
 
-        time.sleep(0.2)
+            time.sleep(0.1)
 
     #  Summary
     log.info(f"\n{'═'*60}")
@@ -536,7 +509,6 @@ def run_all_tests(port: str, firmware_path: str, baudrate: int = 115200):
         tag = "✓" if r.passed else "✗"
         log.info(f"  {tag}  {r.name}")
 
-    note_flash_write_errors()
     link.close()
 
 

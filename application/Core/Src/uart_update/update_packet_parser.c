@@ -10,6 +10,20 @@
 static const uint8_t _ACK = UPDATE_PACKET_ACK;
 static const uint8_t _NACK = UPDATE_PACKET_NACK;
 
+static void update_packet_parser_reset(struct update_packet_parser_t *parser) {
+  // parser->huart = huart;
+  // parser->tim = tim;
+  parser->rx_done = false;
+  parser->idx = 0;
+  parser->write_idx = 0;
+  parser->erase_flag = true;
+  memset(parser->buffer, 0, UPDATE_PACKET_BUFFER_SIZE);
+  // parser->tx_cb = tx_cb;
+
+  // TODO: Move into some callback or something
+  // HAL_UART_Receive_IT(parser->huart, &parser->rx_byte, 1);
+}
+
 void update_packet_parser_init(struct update_packet_parser_t *parser,
                                UART_HandleTypeDef *huart,
                                TIM_HandleTypeDef *tim,
@@ -130,7 +144,9 @@ static void packet_parser_check_rx_end(struct update_packet_parser_t *parser) {
     if (!validate_app_crc32(parser)) {
       /* im already doing this 2 lines before this fn call, i dont need it here
        * honestly */
-      reset_buffer(parser);
+      // reset_buffer(parser);
+      // parser->write_idx = 0; // reset it
+      update_packet_parser_reset(parser);
       return;
     }
 
