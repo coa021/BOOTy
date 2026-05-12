@@ -147,9 +147,10 @@ packet_parser_check_app_header(struct update_packet_parser_t *parser) {
 
   /* validate if the app can fit here, but what if the user changed the size in
    * the header, i will have a problem then */
-  if ((hdr->size + APP_HEADER_SIZE) > UPDATE_STORAGE_MAX_SIZE) {
+  if ((hdr->size + APP_HEADER_SIZE) > APP_MAX_SIZE) {
     custom_logger_log("Error. Firmware cannot fit on the FLASH update sector. "
-                      "MAX Size is 256KB!\r\n");
+                      "MAX Size is %d (~%dKB)!\r\n",
+                      APP_MAX_SIZE, (APP_MAX_SIZE / 1024));
     return false;
   }
 
@@ -261,7 +262,7 @@ void update_packet_parser_tim_callback(struct update_packet_parser_t *parser,
     HAL_TIM_Base_Stop_IT(parser->tim);
     custom_logger_log("Timer fired, idx=%d\r\n", parser->idx);
     // CRC is 2 bytes, so i need at least 3 bytes package
-    if (parser->idx > 2) {
+    if (parser->idx > UPDATE_PACKET_HEADER_SIZE) {
       // i received whole chunk i need to tell timer to print it by disabling it
       // HAL_UART_Transmit_IT(&huart1, &_ACK, 1);
       parser->rx_done = true;
