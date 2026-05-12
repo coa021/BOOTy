@@ -28,7 +28,7 @@ struct update_packet_parser_t {
 
   uint32_t write_idx;
 
-  bool erase_flag;
+  bool first_packet;
   uint32_t fw_size;
 
   void (*tx_cb)(const uint8_t *flag);

@@ -9,4 +9,6 @@ bool update_packet_validate_size(const uint16_t received,
                                  const uint32_t max_size);
 bool update_packet_validate_crc16(const uint8_t *buffer, uint16_t received);
 
+bool update_packet_validate_app_header(const uint8_t *buffer,
+                                       uint32_t *out_size);
 #endif // UPDATE_PACKET_VALIDATOR_H_

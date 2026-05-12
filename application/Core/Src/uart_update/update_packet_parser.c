@@ -18,7 +18,7 @@ static void update_packet_parser_reset(struct update_packet_parser_t *parser) {
   parser->rx_done = false;
   parser->idx = 0;
   parser->write_idx = 0;
-  parser->erase_flag = true;
+  parser->first_packet = true;
   memset(parser->buffer, 0, UPDATE_PACKET_BUFFER_SIZE);
   // parser->tx_cb = tx_cb;
 
@@ -35,7 +35,7 @@ void update_packet_parser_init(struct update_packet_parser_t *parser,
   parser->rx_done = false;
   parser->idx = 0;
   parser->write_idx = 0;
-  parser->erase_flag = true;
+  parser->first_packet = true;
   memset(parser->buffer, 0, UPDATE_PACKET_BUFFER_SIZE);
   parser->tx_cb = tx_cb;
 
@@ -142,7 +142,7 @@ static void packet_parser_check_rx_end(struct update_packet_parser_t *parser) {
   if (parser->write_idx == parser->fw_size) {
     /* i received everything so i can rearm erase flag to delete sector.
      * technically unneeded but ok */
-    parser->erase_flag = true;
+    parser->first_packet = true;
 
     /* TODO: Move this someplace else */
     if (!validate_app_crc32(parser)) {
@@ -162,58 +162,54 @@ static void packet_parser_check_rx_end(struct update_packet_parser_t *parser) {
   }
 }
 
-static bool
-packet_parser_check_app_header(struct update_packet_parser_t *parser) {
+// static bool
+// packet_parser_check_app_header(struct update_packet_parser_t *parser) {
 
-  struct app_header_t *hdr = (struct app_header_t *)parser->buffer;
+//   struct app_header_t *hdr = (struct app_header_t *)parser->buffer;
 
-  if (hdr->magic != APP_MAGIC_CONSTANT) {
-    custom_logger_log("Error with app header in new package. Missing MAGIC "
-                      "constant, couldn't verify integrity of header\r\n");
-    // parser->tx_cb(&_NACK);
-    return false;
-  }
+//   if (hdr->magic != APP_MAGIC_CONSTANT) {
+//     custom_logger_log("Error with app header in new package. Missing MAGIC "
+//                       "constant, couldn't verify integrity of header\r\n");
+//     // parser->tx_cb(&_NACK);
+//     return false;
+//   }
 
-  /* validate if the app can fit here, but what if the user changed the size in
-   * the header, i will have a problem then */
-  if ((hdr->size + APP_HEADER_SIZE) > APP_MAX_SIZE) {
-    custom_logger_log("Error. Firmware cannot fit on the FLASH update sector. "
-                      "MAX Size is %d (~%dKB)!\r\n",
-                      APP_MAX_SIZE, (APP_MAX_SIZE / 1024));
-    return false;
-  }
+//   /* validate if the app can fit here, but what if the user changed the size
+//   in
+//    * the header, i will have a problem then */
+//   if ((hdr->size + APP_HEADER_SIZE) > APP_MAX_SIZE) {
+//     custom_logger_log("Error. Firmware cannot fit on the FLASH update sector.
+//     "
+//                       "MAX Size is %d (~%dKB)!\r\n",
+//                       APP_MAX_SIZE, (APP_MAX_SIZE / 1024));
+//     return false;
+//   }
 
-  /* valid header TODO: This function is checking app header AND assigning
-   * firmware size, a bit problematic, doesnt imply it does that  */
-  parser->fw_size = hdr->size + APP_HEADER_SIZE;
-  parser->erase_flag = false;
+//   /* valid header TODO: This function is checking app header AND assigning
+//    * firmware size, a bit problematic, doesnt imply it does that  */
+//   parser->fw_size = hdr->size + APP_HEADER_SIZE;
+//   parser->first_packet = false;
 
-  return true;
-}
+//   return true;
+// }
 
 static bool packet_parser_erase_sector(struct update_packet_parser_t *parser) {
 
-  if (parser->erase_flag) {
+  if (parser->first_packet) {
 
-    /* only time this can error out is if theres brownout, or that code is
-     * running from that sector, which doesnt happen in this case */
     if (Flash_Erase_Sectors(FLASH_SECTOR_6, 1) != HAL_FLASH_ERROR_NONE) {
       custom_logger_log("Error during flash sector erase\r\n");
-
-      /* sending nack? retries sending package, which still means its the
-       * first package and it will try again to erase. can i corrupt flash if
-       * its stuck into this loop? shouldnt be like that because it failed to
-       * erase */
-      // parser->tx_cb(&_NACK);
+      reset_buffer(parser);
       return false;
     }
 
-    /* TODO: Separate into functions */
+    if (!update_packet_validate_app_header(parser->buffer, parser->fw_size)) {
+      parser->tx_cb(&_NACK);
 
-    if (!packet_parser_check_app_header(parser)) {
-      custom_logger_log("Error during header check of the update app\r\n");
       return false;
     }
+
+    parser->first_packet = false;
   }
   return true;
 }

@@ -4,6 +4,8 @@
 #include "custom_logger.h"
 #include "uart_update/update_packet_parser.h"
 
+#include "app_header.h"
+
 bool update_packet_validate_size(const uint16_t received,
                                  const uint32_t write_idx,
                                  const uint32_t max_size) {
@@ -48,5 +50,32 @@ bool update_packet_validate_crc16(const uint8_t *buffer, uint16_t received) {
 
     return false;
   }
+  return true;
+}
+
+bool update_packet_validate_app_header(const uint8_t *buffer,
+                                       uint32_t *out_size) {
+  //
+  struct app_header_t *hdr = (struct app_header_t *)buffer;
+
+  if (hdr->magic != APP_MAGIC_CONSTANT) {
+    custom_logger_log("Error with app header in new package. Missing MAGIC "
+                      "constant, couldn't verify integrity of header\r\n");
+
+    return false;
+  }
+
+  /* validate if the app can fit here, but what if the user changed the size in
+   * the header, i will have a problem then */
+  uint32_t total_size = hdr->size + APP_HEADER_SIZE;
+  if (total_size > APP_MAX_SIZE) {
+    custom_logger_log("Error. Firmware cannot fit on the FLASH update sector. "
+                      "MAX Size is %d (~%dKB)!\r\n",
+                      APP_MAX_SIZE, (APP_MAX_SIZE / 1024));
+    return false;
+  }
+
+  *out_size = hdr->size + APP_HEADER_SIZE;
+
   return true;
 }
