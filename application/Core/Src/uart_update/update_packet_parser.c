@@ -20,16 +20,8 @@ void update_packet_parser_init(struct update_packet_parser_t *parser,
   parser->idx = 0;
   parser->write_idx = 0;
   parser->erase_flag = true;
-  /*  void *memset(size_t n;
-                  void s[n], int c, size_t n);
-
-DESCRIPTION
-     The memset() function fills the first n bytes of the memory area pointed to
-by s with the constant byte c. */
   memset(parser->buffer, 0, UPDATE_PACKET_BUFFER_SIZE);
   parser->tx_cb = tx_cb;
-  // parser->cb_ack = cb_ack;
-  // parser->cb_nack = cb_nack;
 
   // TODO: Move into some callback or something
   HAL_UART_Receive_IT(parser->huart, &parser->rx_byte, 1);
@@ -100,8 +92,7 @@ static void packet_parser_check_rx_end(struct update_packet_parser_t *parser) {
     HAL_Delay(500);
     custom_logger_log(
         "Validating crc32 of the whole image that is received..\r\n");
-    /* TODO: add check for crc32 validity of whole image once again */
-    // uint32_t crc32(const uint8_t *data, uint32_t length)
+
     struct app_header_t *hdr = (struct app_header_t *)UPDATE_STORAGE_START_ADDR;
     uint32_t img_crc32 = crc32((const uint8_t *)hdr + APP_HEADER_SIZE,
                                parser->fw_size - APP_HEADER_SIZE);
@@ -162,7 +153,6 @@ bool update_packet_parser_parse(struct update_packet_parser_t *parser) {
         return false;
       }
 
-      /* TODO: what if there is no header? */
       /* TODO: Separate into functions */
       struct app_header_t *hdr = (struct app_header_t *)parser->buffer;
 
@@ -185,7 +175,6 @@ bool update_packet_parser_parse(struct update_packet_parser_t *parser) {
     }
 
     packet_parser_check_rx_end(parser);
-    /* TODO: check crc32 on the tx end for whole image */
 
     reset_buffer(parser);
     /* everything is ok so i can ACK this package and get the next chunk of
@@ -200,7 +189,6 @@ bool update_packet_parser_parse(struct update_packet_parser_t *parser) {
 void update_packet_parser_uart_callback(struct update_packet_parser_t *parser,
                                         UART_HandleTypeDef *huart) {
   if (huart->Instance == parser->huart->Instance) {
-    // TODO: Create callbacks for all this to separate HAL from APP later
     HAL_TIM_Base_Stop_IT(parser->tim);
     // __HAL_TIM_SET_COUNTER(parser->tim, 0);
     // CLEAR_BIT(parser->tim->Instance->CR1, TIM_CR1_OPM);

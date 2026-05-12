@@ -101,7 +101,6 @@ int main(void) {
   /* USER CODE BEGIN 2 */
 
   custom_logger_init(&huart1);
-  /* TODO: Will verify later */
   custom_logger_log("Entering bootloader.\r\n");
 
   //  enum verify_result_t res = bl_verify_update(UPDATE_STORAGE_START_ADDR);
@@ -132,12 +131,9 @@ int main(void) {
   // boot_update ? UPDATE_STORAGE_START_ADDR : APP_HEADER_ADDR;
 
   custom_logger_log("Verifying app..\r\n");
-  /* TODO: Please fix, abomination */
   enum verify_result_t res =
       bl_verify_app((const struct app_header_t *)APP_HEADER_ADDR);
   if (res != VERIFY_OK) {
-    /* TODO: Print this in a better way, log is so not feature rich now lol xd
-     */
     custom_logger_log("BOOTy: Verification failed: %d\r\n", res);
     while (1) {
       HAL_GPIO_TogglePin(LED_INDICATOR_GPIO_Port, LED_INDICATOR_Pin);

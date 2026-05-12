@@ -18,11 +18,9 @@ Lets say sector 0 will be bootloader
 sector 1 will be app header
 sector 2-5 will be main app
 sector 6-7 will be where i store OTA updated firmware
-TODO: A bit illogical, update space is larger than main app state but this is
+A bit illogical, update space is larger than main app state but this is
 just an example
  */
-/* idk if what im doing is right lol
-TODO: Check on this logic */
 /* #define FLASH_SECTOR_0_START 0x08000000U
 #define FLASH_SECTOR_1_START 0x08004000U
 #define FLASH_SECTOR_2_START 0x08008000U
@@ -48,12 +46,10 @@ extern uint32_t __UPDATE_STORAGE_LENGTH;      // 256K
 
 /* sector 2 */
 #define APP_HEADER_ADDR ((uint32_t)&__APP_HEADER_START)
-/* TODO: I dont need this sector now */
 // #define APP_HEADER_SECTOR       FLASH_SECTOR_1_START
 
 /* sector 2-5 */
 #define APP_START_ADDR ((uint32_t)&__APP_FLASH_START)
-/* TODO: Fix shit below */
 // #define APP_START_SECTOR        FLASH_SECTOR_2_START
 #define APP_MAX_SIZE ((uint32_t)&__APP_MAIN_LENGTH)
 //       (FLASH_SECTOR_6_START - FLASH_SECTOR_2_START)

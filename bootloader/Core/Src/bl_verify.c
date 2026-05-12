@@ -60,8 +60,6 @@ enum verify_result_t bl_verify_app(const struct app_header_t *app_header) {
   updating only when update version is GT main app version */
 
   custom_logger_log("[BL]: bl_verify_app: verify CRC check\r\n");
-  /* TODO: Fix magic constant, 512 is because thats the padding for the header
-   */
 
   custom_logger_log("[BL]: im checking address %x\r\n",
                     (const uint8_t *)app_header + APP_HEADER_SIZE);
@@ -74,8 +72,6 @@ enum verify_result_t bl_verify_app(const struct app_header_t *app_header) {
   uint8_t digest[32];
   struct tc_sha256_state_struct s;
   (void)tc_sha256_init(&s);
-  /* TODO: Fix magic constant, 512 is because thats the padding for the header
-   */
   tc_sha256_update(&s, (const uint8_t *)app_header + APP_HEADER_SIZE,
                    app_header->size);
   (void)tc_sha256_final(digest, &s);

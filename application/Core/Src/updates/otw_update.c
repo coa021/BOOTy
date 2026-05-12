@@ -12,11 +12,6 @@
 
 /*  helpers */
 /* sending ack */
-/* TODO: Again im coupling my software too much to the HAL library, like if i
- * was to change this i would have to rewrite functions. I need to add some
- * function pointer and separate this into clear layer, liek this, it sucks very
- * much, sign of a real bad architecture, i still have to figure out how to
- * architecture my software correctly lol, huge weakness of mine */
 
 /* ack */
 static void otw_send_ack(struct otw_update_t *update) {
