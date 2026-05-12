@@ -420,6 +420,8 @@ def test_invalid_signature(link: UARTLink, firmware: bytes) -> TestResult:
     n_acked = sum(1 for c in chunks if c.response == Response.ACK)
     passed = n_acked == len(chunks)
 
+    time.sleep(5)
+
     return TestResult(
         name="invalid_signature",
         passed=passed,
@@ -452,23 +454,23 @@ def run_all_tests(port: str, firmware_path: str, baudrate: int = 115200):
 
     # (name, factory) pairs, each factory returns a TestResult
     tests = [
-        ("Corrupt header CRC32", lambda: test_corrupt_header_crc32(link, firmware)),
+        # ("Corrupt header CRC32", lambda: test_corrupt_header_crc32(link, firmware)),
         # (
         #     "Corrupt single app byte",
         #     lambda: test_corrupt_single_app_byte(link, firmware),
         # ),
-        # ("Oversized chunk (>256B)", lambda: test_oversized_chunk(link)),
-        # (
-        #     "Invalid fw_size (>flash limit)",
-        #     lambda: test_invalid_fw_size_too_large(link, firmware),
-        # ),
-        # ("Undersized chunk (<2B)", lambda: test_undersized_chunk(link)),
-        # ("Corrupted CRC16", lambda: test_corrupted_crc16(link, firmware)),
-        # (
-        #     "Firmware without header",
-        #     lambda: test_firmware_without_header(link, firmware),
-        # ),
-        # ("Invalid magic constant", lambda: test_invalid_magic(link, firmware)),
+        ("Oversized chunk (>256B)", lambda: test_oversized_chunk(link)),
+        (
+            "Invalid fw_size (>flash limit)",
+            lambda: test_invalid_fw_size_too_large(link, firmware),
+        ),
+        ("Undersized chunk (<2B)", lambda: test_undersized_chunk(link)),
+        ("Corrupted CRC16", lambda: test_corrupted_crc16(link, firmware)),
+        (
+            "Firmware without header",
+            lambda: test_firmware_without_header(link, firmware),
+        ),
+        ("Invalid magic constant", lambda: test_invalid_magic(link, firmware)),
         # ("Invalid signature", lambda: test_invalid_signature(link, firmware)),
     ]
 

@@ -7,6 +7,8 @@
 #include "flash_layout.h"
 #include <string.h>
 
+#include "uart_update/update_packet_validator.h"
+
 static const uint8_t _ACK = UPDATE_PACKET_ACK;
 static const uint8_t _NACK = UPDATE_PACKET_NACK;
 
@@ -48,53 +50,55 @@ static void reset_buffer(struct update_packet_parser_t *parser) {
   // parser->buffer[0] = '\0';
 }
 
-static bool packet_parser_check_size(struct update_packet_parser_t *parser) {
-  if (parser->idx < UPDATE_PACKET_MIN_SIZE ||
-      parser->idx > UPDATE_PACKET_BUFFER_SIZE) {
-    custom_logger_log("Error: packet size problem, size is {%d}\r\n",
-                      parser->idx);
-    reset_buffer(parser);
-    parser->tx_cb(&_NACK);
-    return false;
-  }
+// static bool packet_parser_check_size(struct update_packet_parser_t *parser) {
+//   if (parser->idx < UPDATE_PACKET_MIN_SIZE ||
+//       parser->idx > UPDATE_PACKET_BUFFER_SIZE) {
+//     custom_logger_log("Error: packet size problem, size is {%d}\r\n",
+//                       parser->idx);
+//     reset_buffer(parser);
+//     parser->tx_cb(&_NACK);
+//     return false;
+//   }
 
-  if (parser->write_idx > APP_MAX_SIZE) {
-    custom_logger_log("Error: write idx problem, write_idx is {%d}. MAX app "
-                      "size is: {%d}\r\n",
-                      parser->write_idx, APP_MAX_SIZE);
-    reset_buffer(parser);
-    parser->tx_cb(&_NACK);
-    return false;
-  }
-  return true;
-}
+//   if (parser->write_idx > APP_MAX_SIZE) {
+//     custom_logger_log("Error: write idx problem, write_idx is {%d}. MAX app "
+//                       "size is: {%d}\r\n",
+//                       parser->write_idx, APP_MAX_SIZE);
+//     reset_buffer(parser);
+//     parser->tx_cb(&_NACK);
+//     return false;
+//   }
+//   return true;
+// }
 
-static bool packet_parser_compare_crc(struct update_packet_parser_t *parser) {
+// static bool packet_parser_compare_crc(struct update_packet_parser_t *parser)
+// {
 
-  if (parser->idx < 2) {
-    custom_logger_log(
-        "Error: Malformed package format. Size of package is: {%d}\r\n",
-        parser->idx);
+//   if (parser->idx < 2) {
+//     custom_logger_log(
+//         "Error: Malformed package format. Size of package is: {%d}\r\n",
+//         parser->idx);
 
-    reset_buffer(parser);
-    // parser->tx_cb(&_NACK);
-    return false;
-  }
+//     reset_buffer(parser);
+//     // parser->tx_cb(&_NACK);
+//     return false;
+//   }
 
-  uint16_t calculated_crc16 = crc16(parser->buffer, parser->idx - 2);
-  uint16_t expected_crc16 =
-      parser->buffer[parser->idx - 2] | (parser->buffer[parser->idx - 1] << 8);
+//   uint16_t calculated_crc16 = crc16(parser->buffer, parser->idx - 2);
+//   uint16_t expected_crc16 =
+//       parser->buffer[parser->idx - 2] | (parser->buffer[parser->idx - 1] <<
+//       8);
 
-  if (calculated_crc16 != expected_crc16) {
-    custom_logger_log("Missmatch in crc16; expected: %d,\tactual: %d\r\n",
-                      expected_crc16, calculated_crc16);
+//   if (calculated_crc16 != expected_crc16) {
+//     custom_logger_log("Missmatch in crc16; expected: %d,\tactual: %d\r\n",
+//                       expected_crc16, calculated_crc16);
 
-    reset_buffer(parser);
-    // parser->tx_cb(&_NACK);
-    return false;
-  }
-  return true;
-}
+//     reset_buffer(parser);
+//     // parser->tx_cb(&_NACK);
+//     return false;
+//   }
+//   return true;
+// }
 
 static bool packet_parser_write_chunk(struct update_packet_parser_t *parser) {
 
@@ -108,7 +112,7 @@ static bool packet_parser_write_chunk(struct update_packet_parser_t *parser) {
     reset_buffer(parser);
     return false;
   }
-  parser->write_idx += parser->idx - UPDATE_PACKET_HEADER_SIZE;
+  parser->write_idx += parser->idx - UPDATE_PACKET_OVERHEAD_SIZE;
 
   return true;
 }
@@ -223,14 +227,25 @@ bool update_packet_parser_parse(struct update_packet_parser_t *parser) {
   parser->rx_done = false;
 
   /* check if package chunk size is valid */
-  if (!packet_parser_check_size(parser)) {
-    custom_logger_log("Error: packet size problem, size is {%d}\r\n",
-                      parser->idx);
+  // if (!packet_parser_check_size(parser)) {
+  //   custom_logger_log("Error: packet size problem, size is {%d}\r\n",
+  //                     parser->idx);
+  //   return false;
+  // }
+
+  if (!update_packet_validate_size(parser->idx, parser->write_idx,
+                                   APP_MAX_SIZE)) {
+    parser->tx_cb(&_NACK);
     return false;
   }
 
   /* compare crc16 of each received chunk */
-  if (!packet_parser_compare_crc(parser)) {
+  // if (!packet_parser_compare_crc(parser)) {
+  //   parser->tx_cb(&_NACK);
+  //   return false;
+  // }
+
+  if (!update_packet_validate_crc16(parser->buffer, parser->idx)) {
     parser->tx_cb(&_NACK);
     return false;
   }
@@ -287,7 +302,7 @@ void update_packet_parser_tim_callback(struct update_packet_parser_t *parser,
     HAL_TIM_Base_Stop_IT(parser->tim);
     // custom_logger_log("Timer fired, idx=%d\r\n", parser->idx);
     // CRC is 2 bytes, so i need at least 3 bytes package
-    if (parser->idx > UPDATE_PACKET_HEADER_SIZE) {
+    if (parser->idx > UPDATE_PACKET_OVERHEAD_SIZE) {
       // i received whole chunk i need to tell timer to print it by disabling it
       // HAL_UART_Transmit_IT(&huart1, &_ACK, 1);
       parser->rx_done = true;

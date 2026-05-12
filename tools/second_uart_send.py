@@ -29,7 +29,7 @@ firmware_size = len(firmware)
 print(f"Firmware size is: {firmware_size}")
 
 ser = serial.Serial(
-    port="/dev/ttyUSB2",
+    port="/dev/ttyUSB0",
     baudrate=115200,
     parity=serial.PARITY_NONE,
     stopbits=serial.STOPBITS_ONE,
