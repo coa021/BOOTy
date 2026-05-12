@@ -77,25 +77,19 @@ static void MX_TIM4_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
-struct ring_buffer_t rx_ring;
-struct otw_uart_receiver_t receiver;
-struct otw_packet_parser_t parser;
-struct otw_update_t update;
+// struct ring_buffer_t rx_ring;
+// struct otw_uart_receiver_t receiver;
+// struct otw_packet_parser_t parser;
+// struct otw_update_t update;
 
-static uint32_t last_press = 0;
-uint32_t last_blink = 0;
-
-static void log(const char *msg);
+ static uint32_t last_press = 0;
+ uint32_t last_blink = 0;
 
 char huart2_rx_buffer;
-
-volatile bool print_flag = false;
 
 struct update_packet_parser_t packet_parser;
 
 void update_packet_parser_tx_cb(const uint8_t *flag);
-// void update_packet_parser_cb_ack(void);
-// void update_packet_parser_cb_nack(void);
 
 /* USER CODE END 0 */
 
