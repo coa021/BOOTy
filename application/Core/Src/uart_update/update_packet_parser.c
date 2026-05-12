@@ -43,6 +43,15 @@ static bool packet_parser_check_size(struct update_packet_parser_t *parser) {
     parser->tx_cb(&_NACK);
     return false;
   }
+
+  if (parser->write_idx > APP_MAX_SIZE) {
+    custom_logger_log("Error: write idx problem, write_idx is {%d}. MAX app "
+                      "size is: {%d}\r\n",
+                      parser->write_idx, APP_MAX_SIZE);
+    reset_buffer(parser);
+    parser->tx_cb(&_NACK);
+    return false;
+  }
   return true;
 }
 
@@ -260,7 +269,7 @@ void update_packet_parser_tim_callback(struct update_packet_parser_t *parser,
     // i would need to restart it
 
     HAL_TIM_Base_Stop_IT(parser->tim);
-    custom_logger_log("Timer fired, idx=%d\r\n", parser->idx);
+    // custom_logger_log("Timer fired, idx=%d\r\n", parser->idx);
     // CRC is 2 bytes, so i need at least 3 bytes package
     if (parser->idx > UPDATE_PACKET_HEADER_SIZE) {
       // i received whole chunk i need to tell timer to print it by disabling it

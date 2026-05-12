@@ -155,8 +155,10 @@ int main(void) {
     /* USER CODE BEGIN 3 */
 
     if (update_packet_parser_parse(&packet_parser)) {
-      custom_logger_log("Received a chunk\r\n");
+      // custom_logger_log("Received a chunk\r\n");
       /* i can store it into flash */
+      /* but i already stored it, will have to separate that if i go that route
+       */
     }
 
     // custom_logger_log("My rx buffer: %d", (uint8_t)packet_parser.rx_byte);

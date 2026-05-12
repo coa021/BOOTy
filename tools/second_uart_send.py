@@ -19,7 +19,7 @@ def custom_crc16(data):
 ACK = 0x01
 NACK = 0x15
 
-with open("10MB_signed.bin", "rb") as f:
+with open("application_signed.bin", "rb") as f:
     firmware = f.read()
 
 firmware = bytearray(firmware)

@@ -479,6 +479,7 @@ def run_all_tests(port: str, firmware_path: str, baudrate: int = 115200):
 
     # (name, factory) pairs, each factory returns a TestResult
     tests = [
+        ("Corrupt header CRC32", lambda: test_corrupt_header_crc32(link, firmware)),
         ("Oversized chunk (>256B)", lambda: test_oversized_chunk(link)),
         ("Undersized chunk (<2B)", lambda: test_undersized_chunk(link)),
         ("Corrupted CRC16", lambda: test_corrupted_crc16(link, firmware)),
@@ -491,7 +492,6 @@ def run_all_tests(port: str, firmware_path: str, baudrate: int = 115200):
             "Invalid fw_size (>flash limit)",
             lambda: test_invalid_fw_size_too_large(link, firmware),
         ),
-        # ("Corrupt header CRC32", lambda: test_corrupt_header_crc32(link, firmware)),
         (
             "Corrupt single app byte",
             lambda: test_corrupt_single_app_byte(link, firmware),

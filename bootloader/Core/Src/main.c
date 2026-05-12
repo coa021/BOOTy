@@ -145,16 +145,11 @@ int main(void) {
      * check that and if its valid i want to jump to it, otherwise we are in
      * hard fault blinking led and i dont have any other way to recover i guess
      */
-    if (get_update_header()->magic == APP_MAGIC_CONSTANT) {
-      if (bl_apply_update()) {
-        custom_logger_log("[BL]: Swap successfull to an older version.\n");
-        // bl_clear_update_sector();
-        // custom_logger_log("[BL]: Update sector cleared.Removed firmware from
-        // " "update sector\r\n");
-      } else {
-        custom_logger_log("[BL]: Swap NOT!!!! successfull\n");
-      }
+    if (get_update_header()->magic == APP_MAGIC_CONSTANT && bl_apply_update()) {
+      custom_logger_log("[BL]: Swap successfull to an older version.\n");
     } else {
+      custom_logger_log("[BL]: Couldn't verify older app version. Stuck in "
+                        "bootloader. Please update manually.\n");
       while (1) {
         HAL_GPIO_TogglePin(LED_INDICATOR_GPIO_Port, LED_INDICATOR_Pin);
         HAL_Delay(2000);
