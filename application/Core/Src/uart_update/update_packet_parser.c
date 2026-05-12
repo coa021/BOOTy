@@ -51,7 +51,7 @@ static bool packet_parser_compare_crc(struct update_packet_parser_t *parser) {
         parser->idx);
 
     reset_buffer(parser);
-    parser->tx_cb(&_NACK);
+    // parser->tx_cb(&_NACK);
     return false;
   }
 
@@ -64,7 +64,7 @@ static bool packet_parser_compare_crc(struct update_packet_parser_t *parser) {
                       expected_crc16, calculated_crc16);
 
     reset_buffer(parser);
-    parser->tx_cb(&_NACK);
+    // parser->tx_cb(&_NACK);
     return false;
   }
   return true;
@@ -87,26 +87,36 @@ static bool packet_parser_write_chunk(struct update_packet_parser_t *parser) {
   return true;
 }
 
+static bool validate_app_crc32(struct update_packet_parser_t *parser) {
+  custom_logger_log(
+      "Validating crc32 of the whole image that is received..\r\n");
+
+  struct app_header_t *hdr = (struct app_header_t *)UPDATE_STORAGE_START_ADDR;
+  uint32_t img_crc32 = crc32((const uint8_t *)hdr + APP_HEADER_SIZE,
+                             parser->fw_size - APP_HEADER_SIZE);
+
+  if (img_crc32 != hdr->crc) {
+    custom_logger_log("Error comparing the crc32 on the end of tx\r\n");
+    custom_logger_log("Expected: {%d}, Actual: {%d}\r\n", img_crc32, hdr->crc);
+    // this would retry sending the package which i do not want i guess
+    // parser->tx_cb(&_NACK);
+    return false;
+  } else {
+    custom_logger_log("CRC32 matches what was expected\r\n");
+  }
+
+  return true;
+}
+
 static void packet_parser_check_rx_end(struct update_packet_parser_t *parser) {
   if (parser->write_idx == parser->fw_size) {
-    HAL_Delay(500);
-    custom_logger_log(
-        "Validating crc32 of the whole image that is received..\r\n");
-
-    struct app_header_t *hdr = (struct app_header_t *)UPDATE_STORAGE_START_ADDR;
-    uint32_t img_crc32 = crc32((const uint8_t *)hdr + APP_HEADER_SIZE,
-                               parser->fw_size - APP_HEADER_SIZE);
+    /* i received everything so i can rearm erase flag to delete sector.
+     * technically unneeded but ok */
+    parser->erase_flag = true;
 
     /* TODO: Move this someplace else */
-    if (img_crc32 != hdr->crc) {
-      custom_logger_log("Error comparing the crc32 on the end of tx\r\n");
-      custom_logger_log("Expected: {%d}, Actual: {%d}\r\n", img_crc32,
-                        hdr->crc);
-      // this would retry sending the package which i do not want i guess
-      // parser->tx_cb(&_NACK);
+    if (!validate_app_crc32(parser)) {
       return;
-    } else {
-      custom_logger_log("CRC32 matches what was expected\r\n");
     }
 
     // mark tx as done, rr system
@@ -117,54 +127,63 @@ static void packet_parser_check_rx_end(struct update_packet_parser_t *parser) {
   }
 }
 
+static bool packet_parser_erase_sector(struct update_packet_parser_t *parser) {
+
+  if (parser->erase_flag) {
+
+    /* only time this can error out is if theres brownout, or that code is
+     * running from that sector, which doesnt happen in this case */
+    if (Flash_Erase_Sectors(FLASH_SECTOR_6, 1) != HAL_FLASH_ERROR_NONE) {
+      custom_logger_log("Error during flash sector erase\r\n");
+
+      /* sending nack? retries sending package, which still means its the
+       * first package and it will try again to erase. can i corrupt flash if
+       * its stuck into this loop? shouldnt be like that because it failed to
+       * erase */
+      // parser->tx_cb(&_NACK);
+      return false;
+    }
+
+    /* TODO: Separate into functions */
+    struct app_header_t *hdr = (struct app_header_t *)parser->buffer;
+
+    if (hdr->magic != APP_MAGIC_CONSTANT) {
+      custom_logger_log("Error with app header in new package. Missing MAGIC "
+                        "constant, couldn't verify integrity of header\r\n");
+      // parser->tx_cb(&_NACK);
+      return false;
+    }
+
+    parser->fw_size = hdr->size + APP_HEADER_SIZE;
+    parser->erase_flag = false;
+  }
+  return true;
+}
+
 bool update_packet_parser_parse(struct update_packet_parser_t *parser) {
 
   if (parser->rx_done) {
     parser->rx_done = false;
 
+    /* check if package chunk size is valid */
     if (!packet_parser_check_size(parser)) {
       custom_logger_log("Error: packet size problem, size is {%d}\r\n",
                         parser->idx);
       return false;
     }
 
-    // custom_logger_log("Parser done let me print\r\n");
-    // parser->buffer[parser->idx] = '\0';
-    // custom_logger_log("Message: %s", parser->buffer);
+    /* compare crc16 of each received chunk */
+    if (!packet_parser_compare_crc(parser)) {
+      parser->tx_cb(&_NACK);
+      return false;
+    }
 
-    packet_parser_compare_crc(parser);
-    /* checking here if its the first package, if yes i need to erase the FLASH
-     * sector and also grab the firmware size */
-
-    /* writing chunks */
-
-    if (parser->erase_flag) {
-
-      /* only time this can error out is if theres brownout, or that code is
-       * running from that sector, which doesnt happen in this case */
-      if (Flash_Erase_Sectors(FLASH_SECTOR_6, 1) != HAL_FLASH_ERROR_NONE) {
-        custom_logger_log("Error during flash sector erase\r\n");
-
-        /* sending nack? retries sending package, which still means its the
-         * first package and it will try again to erase. can i corrupt flash if
-         * its stuck into this loop? shouldnt be like that because it failed to
-         * erase */
-        parser->tx_cb(&_NACK);
-        return false;
-      }
-
-      /* TODO: Separate into functions */
-      struct app_header_t *hdr = (struct app_header_t *)parser->buffer;
-
-      if (hdr->magic != APP_MAGIC_CONSTANT) {
-        custom_logger_log("Error with app header in new package. Missing MAGIC "
-                          "constant, couldn't verify integrity of header\r\n");
-        parser->tx_cb(&_NACK);
-        return false;
-      }
-
-      parser->fw_size = hdr->size + APP_HEADER_SIZE;
-      parser->erase_flag = false;
+    /* this is executed on the first package, and resetted on the last package
+     */
+    if (!packet_parser_erase_sector(parser)) {
+      custom_logger_log("Error, failed erasing sector, retrying..\r\n");
+      parser->tx_cb(&_NACK);
+      return false;
     }
 
     if (!packet_parser_write_chunk(parser)) {
@@ -174,12 +193,15 @@ bool update_packet_parser_parse(struct update_packet_parser_t *parser) {
       return false;
     }
 
-    packet_parser_check_rx_end(parser);
-
     reset_buffer(parser);
     /* everything is ok so i can ACK this package and get the next chunk of
      * data*/
     parser->tx_cb(&_ACK);
+
+    /* TODO: Testing, moved this here so that i can confirm/ACK the last package
+     * i received and only after that do i check if we are at end of tx, since
+     * this will reboot the system */
+    packet_parser_check_rx_end(parser);
 
     return true;
   }
