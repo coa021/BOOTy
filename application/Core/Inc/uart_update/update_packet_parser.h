@@ -31,14 +31,16 @@ struct update_packet_parser_t {
   bool erase_flag;
   uint32_t fw_size;
 
-  void (*cb_ack)(void);
-  void (*cb_nack)(void);
+  void (*tx_cb)(const uint8_t *flag);
+
+  // void (*cb_ack)(void);
+  // void (*cb_nack)(void);
 };
 
 void update_packet_parser_init(struct update_packet_parser_t *parser,
                                UART_HandleTypeDef *huart,
-                               TIM_HandleTypeDef *tim, void (*cb_ack)(void),
-                               void (*cb_nack)(void));
+                               TIM_HandleTypeDef *tim,
+                               void (*tx_cb)(const uint8_t *));
 bool update_packet_parser_parse(struct update_packet_parser_t *parser);
 
 void update_packet_parser_uart_callback(struct update_packet_parser_t *parser,

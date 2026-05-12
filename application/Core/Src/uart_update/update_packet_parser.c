@@ -7,10 +7,13 @@
 #include "flash_layout.h"
 #include <string.h>
 
+static const uint8_t _ACK = UPDATE_PACKET_ACK;
+static const uint8_t _NACK = UPDATE_PACKET_NACK;
+
 void update_packet_parser_init(struct update_packet_parser_t *parser,
                                UART_HandleTypeDef *huart,
-                               TIM_HandleTypeDef *tim, void (*cb_ack)(void),
-                               void (*cb_nack)(void)) {
+                               TIM_HandleTypeDef *tim,
+                               void (*tx_cb)(const uint8_t *)) {
   parser->huart = huart;
   parser->tim = tim;
   parser->rx_done = false;
@@ -24,8 +27,9 @@ DESCRIPTION
      The memset() function fills the first n bytes of the memory area pointed to
 by s with the constant byte c. */
   memset(parser->buffer, 0, UPDATE_PACKET_BUFFER_SIZE);
-  parser->cb_ack = cb_ack;
-  parser->cb_nack = cb_nack;
+  parser->tx_cb = tx_cb;
+  // parser->cb_ack = cb_ack;
+  // parser->cb_nack = cb_nack;
 
   // TODO: Move into some callback or something
   HAL_UART_Receive_IT(parser->huart, &parser->rx_byte, 1);
@@ -41,7 +45,7 @@ static bool packet_parser_check_size(struct update_packet_parser_t *parser) {
     custom_logger_log("Error: packet size problem, size is {%d}\r\n",
                       parser->idx);
     reset_buffer(parser);
-    parser->cb_nack();
+    parser->tx_cb(&_NACK);
     return false;
   }
   return true;
@@ -58,7 +62,7 @@ static bool packet_parser_compare_crc(struct update_packet_parser_t *parser) {
                       expected_crc16, calculated_crc16);
 
     reset_buffer(parser);
-    parser->cb_nack();
+    parser->tx_cb(&_ACK);
     return false;
   }
   return true;
@@ -128,7 +132,7 @@ bool update_packet_parser_parse(struct update_packet_parser_t *parser) {
     packet_parser_check_rx_end(parser);
 
     reset_buffer(parser);
-    parser->cb_ack();
+    parser->tx_cb(&_ACK);
 
     return true;
   }
@@ -167,7 +171,7 @@ void update_packet_parser_tim_callback(struct update_packet_parser_t *parser,
     } else {
       // custom_logger_log("Nack\r\n");
       // HAL_UART_Transmit_IT(&huart1, &_NACK, 1);
-      parser->cb_nack();
+      parser->tx_cb(&_NACK);
       parser->idx = 0;
     }
   }

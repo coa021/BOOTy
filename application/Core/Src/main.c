@@ -93,8 +93,9 @@ volatile bool print_flag = false;
 
 struct update_packet_parser_t packet_parser;
 
-void update_packet_parser_cb_ack(void);
-void update_packet_parser_cb_nack(void);
+void update_packet_parser_tx_cb(const uint8_t *flag);
+// void update_packet_parser_cb_ack(void);
+// void update_packet_parser_cb_nack(void);
 
 /* USER CODE END 0 */
 
@@ -133,15 +134,14 @@ int main(void) {
   /* initializations */
   custom_logger_init(&huart1);
   update_packet_parser_init(&packet_parser, &huart2, &htim4,
-                            update_packet_parser_cb_ack,
-                            update_packet_parser_cb_nack);
+                            update_packet_parser_tx_cb);
 
   // rb_init(&rx_ring);
   // otw_uart_receiver_init(&receiver, &rx_ring, &huart1);
   // otw_packet_parser_init(&parser, &rx_ring, &htim1);
   // otw_update_init(&update, &huart1);
 
-  custom_logger_log("\nHello from application v1\n");
+  custom_logger_log("\nHello from application v2\n");
 
   // TODO: Refactor this, make some callback or something, or do it in init?
 
@@ -441,15 +441,19 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
   update_packet_parser_tim_callback(&packet_parser, htim);
 }
 
-void update_packet_parser_cb_ack(void) {
-  static uint8_t _ack = UPDATE_PACKET_ACK;
-  HAL_UART_Transmit_IT(packet_parser.huart, &_ack, 1);
+void update_packet_parser_tx_cb(const uint8_t *flag) {
+  HAL_UART_Transmit_IT(packet_parser.huart, flag, 1);
 }
 
-void update_packet_parser_cb_nack(void) {
-  static uint8_t _nack = UPDATE_PACKET_NACK;
-  HAL_UART_Transmit_IT(packet_parser.huart, &_nack, 1);
-}
+// void update_packet_parser_cb_ack(void) {
+//   static uint8_t _ack = UPDATE_PACKET_ACK;
+//   HAL_UART_Transmit_IT(packet_parser.huart, &_ack, 1);
+// }
+
+// void update_packet_parser_cb_nack(void) {
+//   static uint8_t _nack = UPDATE_PACKET_NACK;
+//   HAL_UART_Transmit_IT(packet_parser.huart, &_nack, 1);
+// }
 
 /* USER CODE END 4 */
 
