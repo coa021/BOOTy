@@ -22,7 +22,7 @@ static bool fw_copy_to_address(uint32_t copy_start_addr,
   uint32_t words;
   uint32_t ret;
 
-  custom_logger_log("Entering fw_copy_to_address\r\n");
+  custom_logger_log("[BOOTy]: Entering fw_copy_to_address\r\n");
 
   while (bytes_copied < fw_app_size) {
 
@@ -38,33 +38,47 @@ static bool fw_copy_to_address(uint32_t copy_start_addr,
     words = (chunk + 3) / 4;
     ret = Flash_Write_Data(flash_write_addr, (uint32_t *)fw_buf, words);
     if (ret != HAL_FLASH_ERROR_NONE) {
-      custom_logger_log("Error in Flash_Write_Data with ret: %d\r\n", ret);
+      custom_logger_log("[BOOTy]: Error in Flash_Write_Data with ret: %d\r\n",
+                        ret);
       return false;
     }
     /* we wrote full words, nothing is leftover */
     flash_write_addr += words * 4;
     bytes_copied += chunk;
 
-    custom_logger_log("Bytes copied: {%d} / {%d}\r", bytes_copied, fw_app_size);
+    custom_logger_log("[BOOTy]: Bytes copied: {%d} / {%d}\r", bytes_copied,
+                      fw_app_size);
   }
 
-  custom_logger_log("fw_copy_to_sector succeeded in copying app\r\n");
+  custom_logger_log("[BOOTy]: fw_copy_to_sector succeeded in copying app\r\n");
   return true;
 }
 
 /* funtions --------------------------------------- */
 bool bl_check_for_update(void) {
-  custom_logger_log("Current app version is: %x", get_app_header()->version);
+  custom_logger_log("[BOOTy]: Current app version is: %x\r\n",
+                    get_app_header()->version);
 
-  custom_logger_log("Current update_app_header version is: %x\r\n",
+  custom_logger_log("[BOOTy]: Current update_app_header version is: %x\r\n",
                     get_update_header()->version);
+
+  bool cmp_res = (get_update_header()->version > get_app_header()->version);
+
+  if (cmp_res) {
+    custom_logger_log(
+        "[BOOTy]: Update version newer, will proceed with update..\r\n");
+  } else {
+    custom_logger_log(
+        "[BOOTy]: Update version is older. Need to manually flash it or it "
+        "will be used as a backup in case main application is corrupted.\r\n");
+  }
 
   /* changed to >= just so i have fallback if update fails during write or
    * something so that the BL will check the update once again and write it once
    * again until it succeeds, i had an error where i moved a wire during copy
    * process and i cant boot into app anymore its stuck in BL XD */
   /* TODO: Testing purposes, removed this to check fallback code */
-  return (get_update_header()->version > get_app_header()->version);
+  return cmp_res;
 }
 
 bool bl_apply_update(void) {
@@ -72,7 +86,8 @@ bool bl_apply_update(void) {
   enum verify_result_t res = bl_verify_app(get_update_header());
   if (res != VERIFY_OK) {
     custom_logger_log(
-        "[BL]: Failed verifying updated firmware app with reason: %d\r\n", res);
+        "[BOOTy]: Failed verifying updated firmware app with reason: %d\r\n",
+        res);
     return false;
   }
 
@@ -82,7 +97,7 @@ bool bl_apply_update(void) {
   bool ret = fw_copy_to_address(UPDATE_STORAGE_START_ADDR, APP_HEADER_ADDR,
                                 get_update_header()->size);
   if (!ret) {
-    custom_logger_log("fw_copy_to_address failed in copying\r\n");
+    custom_logger_log("[BOOTy]: fw_copy_to_address failed in copying\r\n");
   }
   return true;
   //
@@ -91,45 +106,49 @@ bool bl_apply_update(void) {
 bool bl_clear_update_sector(void) {
   return Flash_Erase_Sectors(FLASH_SECTOR_6, 1) != HAL_FLASH_ERROR_NONE;
 }
+/* Removed because im not using RAM swap  */
+// bool bl_swap_partitions(void) {
 
-bool bl_swap_partitions(void) {
+//   /* check if the update fw is valid */
+//   enum verify_result_t res = bl_verify_app(get_update_header());
+//   if (res != VERIFY_OK) {
+//     custom_logger_log(
+//         "[BOOTy]: Failed verifying updated firmware app with reason: %d\n",
+//         res);
+//     return false;
+//   }
 
-  /* check if the update fw is valid */
-  enum verify_result_t res = bl_verify_app(get_update_header());
-  if (res != VERIFY_OK) {
-    custom_logger_log(
-        "[BL]: Failed verifying updated firmware app with reason: %d\n", res);
-    return false;
-  }
+//   /* i need to grab the fw into ram, overwrite it with the main app, move
+//   update
+//    * from ram to main slot */
+//   const uint32_t fw_update_size = get_update_header()->size + 512;
+//   uint8_t fw_update_buff[fw_update_size];
+//   memcpy(fw_update_buff, get_update_header(), fw_update_size);
 
-  /* i need to grab the fw into ram, overwrite it with the main app, move update
-   * from ram to main slot */
-  const uint32_t fw_update_size = get_update_header()->size + 512;
-  uint8_t fw_update_buff[fw_update_size];
-  memcpy(fw_update_buff, get_update_header(), fw_update_size);
+//   /* remove update fw sectors */
+//   Flash_Erase_Sectors(FLASH_SECTOR_6, 1);
+//   /* move the main app to the update sector */
+//   bool ret = fw_copy_to_address(APP_HEADER_ADDR, UPDATE_STORAGE_START_ADDR,
+//                                 get_app_header()->size);
+//   if (!ret) {
+//     custom_logger_log("Error copying main app to new address, exiting\r\n");
+//     return false;
+//   }
 
-  /* remove update fw sectors */
-  Flash_Erase_Sectors(FLASH_SECTOR_6, 1);
-  /* move the main app to the update sector */
-  bool ret = fw_copy_to_address(APP_HEADER_ADDR, UPDATE_STORAGE_START_ADDR,
-                                get_app_header()->size);
-  if (!ret) {
-    custom_logger_log("Error copying main app to new address, exiting\r\n");
-    return false;
-  }
+//   /* move update to main app's section */
+//   Flash_Erase_Sectors(FLASH_SECTOR_2, 4);
+//   ret = fw_copy_to_address((uint32_t)fw_update_buff, APP_HEADER_ADDR,
+//                            fw_update_size);
 
-  /* move update to main app's section */
-  Flash_Erase_Sectors(FLASH_SECTOR_2, 4);
-  ret = fw_copy_to_address((uint32_t)fw_update_buff, APP_HEADER_ADDR,
-                           fw_update_size);
+//   if (!ret) {
+//     custom_logger_log(
+//         "Error copying copied firmware from ram to new address,
+//         exiting\r\n");
+//     return false;
+//   }
 
-  if (!ret) {
-    custom_logger_log(
-        "Error copying copied firmware from ram to new address, exiting\r\n");
-    return false;
-  }
-
-  /* TODO: this will brick the device if some error happens in between lol, very
-   * unsafe */
-  return true;
-}
+//   /* TODO: this will brick the device if some error happens in between lol,
+//   very
+//    * unsafe */
+//   return true;
+// }

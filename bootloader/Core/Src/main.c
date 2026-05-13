@@ -101,54 +101,40 @@ int main(void) {
   /* USER CODE BEGIN 2 */
 
   custom_logger_init(&huart1);
-  custom_logger_log("Entering bootloader.\r\n");
-
-  //  enum verify_result_t res = bl_verify_update(UPDATE_STORAGE_START_ADDR);
-  //  if (res == VERIFY_UPDATE_AVAILABLE) {
-  //    custom_logger_log("Update available, doing checks\n");
-  //    res = bl_update_fw();
-  //    if (res != VERIFY_OK) {
-  //      custom_logger_log("problem with flash erase and write somewhere");
-  //    }
-  //  }
+  custom_logger_log("[BOOTy]: Entering bootloader.\r\n");
 
   bool boot_update = bl_check_for_update();
 
   if (boot_update) {
     /* new version available */
     if (bl_apply_update()) {
-      // if (bl_swap_partitions()) {
-      custom_logger_log("[BL]: Swap successfull\n");
+      custom_logger_log("[BOOTy]: Swap successfull\n");
+      /* Im not clearing out the firmware, saving it as backup in case main app
+       * fails */
       // bl_clear_update_sector();
-      // custom_logger_log("[BL]: Update sector cleared.Removed firmware from "
-      // "update sector\r\n");
+      // custom_logger_log("[BOOTy]: Update sector cleared.Removed firmware from
+      // " "update sector\r\n");
     } else {
-      custom_logger_log("[BL]: Swap NOT!!!! successfull\n");
+      custom_logger_log("[BOOTy]: Swap NOT!!!! successfull\n");
     }
   }
 
-  // uint32_t boot_address =
-  // boot_update ? UPDATE_STORAGE_START_ADDR : APP_HEADER_ADDR;
-
-  custom_logger_log("Verifying app..\r\n");
+  custom_logger_log("[BOOTy]: Verifying app..\r\n");
   enum verify_result_t res =
       bl_verify_app((const struct app_header_t *)APP_HEADER_ADDR);
   if (res != VERIFY_OK) {
-    custom_logger_log("BOOTy: Verification failed: %d\r\n", res);
-
-    // TODO: Add some fallback, if the main app fails and there is an update
-    // available, i would want to boot from it
+    custom_logger_log("[BOOTy]: Verification failed: %d\r\n", res);
 
     /* this section here is fallback section, this would have to be moved
-     * someplace else TODO: */
+     * someplace else*/
     /* logic is as follows: if there is anything in the update sector i want to
      * check that and if its valid i want to jump to it, otherwise we are in
      * hard fault blinking led and i dont have any other way to recover i guess
      */
     if (get_update_header()->magic == APP_MAGIC_CONSTANT && bl_apply_update()) {
-      custom_logger_log("[BL]: Swap successfull to an older version.\n");
+      custom_logger_log("[BOOTy]: Swap successfull to an older version.\n");
     } else {
-      custom_logger_log("[BL]: Couldn't verify older app version. Stuck in "
+      custom_logger_log("[BOOTy]: Couldn't verify older app version. Stuck in "
                         "bootloader. Please update manually.\n");
       while (1) {
         HAL_GPIO_TogglePin(LED_INDICATOR_GPIO_Port, LED_INDICATOR_Pin);
@@ -158,7 +144,7 @@ int main(void) {
   }
 
   custom_logger_log(
-      "BOOTy: Application validated successfully, jumping to app\r\n");
+      "[BOOTy]: Application validated successfully, jumping to app\r\n");
   bl_jump_to_app();
 
   /* Should never reach here */

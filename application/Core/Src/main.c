@@ -148,7 +148,7 @@ int main(void) {
 
     /* USER CODE BEGIN 3 */
 
-    if (update_packet_parser_parse(&packet_parser)) {
+    if (update_packet_parser_parse_and_process(&packet_parser)) {
       // custom_logger_log("Received a chunk\r\n");
       /* i can store it into flash */
       /* but i already stored it, will have to separate that if i go that route

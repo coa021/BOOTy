@@ -7,7 +7,7 @@
 #define UPDATE_PACKET_FLASH_SECTOR_START FLASH_SECTOR_6
 #define UPDATE_PACKET_FLASH_SECTOR_NUM_REMOVE 2
 
-bool update_packet_flash_erase_update(void);
+bool update_packet_flash_erase_update(const uint32_t fw_size);
 bool update_packet_flash_write_chunk(uint32_t dest_addr,
                                      const uint8_t *payload,
                                      uint16_t payload_size);

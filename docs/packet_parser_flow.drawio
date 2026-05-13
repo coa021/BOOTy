@@ -1,192 +1,192 @@
 <mxfile host="65bd71144e">
     <diagram id="AWJUbasjZ18lNjQYE8Gw" name="Page-1">
-        <mxGraphModel dx="3681" dy="3373" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+        <mxGraphModel dx="3166" dy="3160" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
-                <mxCell id="5" value="Packet parse and processing of chunks" style="swimlane;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                <mxCell id="5" value="Packet parse and processing of chunks" style="swimlane;whiteSpace=wrap;html=1;" parent="1" vertex="1">
                     <mxGeometry x="-50" y="-1180" width="1620" height="1030" as="geometry"/>
                 </mxCell>
-                <mxCell id="6" value="return false&lt;div&gt;Waiting for more data so i can fill whole chunk (256B)&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="5">
+                <mxCell id="6" value="return false&lt;div&gt;Waiting for more data so i can fill whole chunk (256B)&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" parent="5" vertex="1">
                     <mxGeometry x="510" y="60" width="120" height="60" as="geometry"/>
                 </mxCell>
-                <mxCell id="10" style="edgeStyle=none;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" edge="1" parent="5" source="44" target="6">
+                <mxCell id="10" style="edgeStyle=none;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" parent="5" source="44" target="6" edge="1">
                     <mxGeometry relative="1" as="geometry">
                         <mxPoint x="420.0000000000002" y="90" as="sourcePoint"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="11" value="&lt;span style=&quot;color: rgb(0, 0, 0); font-size: 11px;&quot;&gt;FALSE&lt;/span&gt;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=21;" vertex="1" connectable="0" parent="10">
+                <mxCell id="11" value="&lt;span style=&quot;color: rgb(0, 0, 0); font-size: 11px;&quot;&gt;FALSE&lt;/span&gt;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=21;" parent="10" vertex="1" connectable="0">
                     <mxGeometry x="-0.3931" y="2" relative="1" as="geometry">
                         <mxPoint as="offset"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="13" style="edgeStyle=orthogonalEdgeStyle;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;exitX=0.471;exitY=1.014;exitDx=0;exitDy=0;exitPerimeter=0;" edge="1" parent="5" source="44" target="12">
+                <mxCell id="13" style="edgeStyle=orthogonalEdgeStyle;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;exitX=0.471;exitY=1.014;exitDx=0;exitDy=0;exitPerimeter=0;" parent="5" source="44" target="12" edge="1">
                     <mxGeometry relative="1" as="geometry">
                         <mxPoint x="340" y="130" as="sourcePoint"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="14" value="&lt;div&gt;TRUE&lt;/div&gt;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=18;" vertex="1" connectable="0" parent="13">
+                <mxCell id="14" value="&lt;div&gt;TRUE&lt;/div&gt;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=18;" parent="13" vertex="1" connectable="0">
                     <mxGeometry x="-0.2213" y="1" relative="1" as="geometry">
                         <mxPoint as="offset"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="20" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" edge="1" parent="5" source="12" target="19">
+                <mxCell id="20" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" parent="5" source="12" target="19" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="12" value="&lt;div&gt;&lt;b&gt;Received whole chunk, parse it now:&lt;/b&gt;&lt;/div&gt;parser-&amp;gt;rx_done = false&lt;div&gt;received_bytes = parser-&amp;gt;idx (how many bytes i received so far, could be whole chunk or remainder)&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="5">
+                <mxCell id="12" value="&lt;div&gt;&lt;b&gt;Received whole chunk, parse it now:&lt;/b&gt;&lt;/div&gt;parser-&amp;gt;rx_done = false&lt;div&gt;received_bytes = parser-&amp;gt;idx (how many bytes i received so far, could be whole chunk or remainder)&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" parent="5" vertex="1">
                     <mxGeometry x="165" y="180" width="300" height="70" as="geometry"/>
                 </mxCell>
-                <mxCell id="28" style="edgeStyle=none;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="5" source="19" target="21">
+                <mxCell id="28" style="edgeStyle=none;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="5" source="19" target="21" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="35" value="TRUE" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="28">
+                <mxCell id="35" value="TRUE" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="28" vertex="1" connectable="0">
                     <mxGeometry x="0.0584" y="1" relative="1" as="geometry">
                         <mxPoint as="offset"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="30" style="edgeStyle=none;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="5" source="19" target="25">
+                <mxCell id="30" style="edgeStyle=none;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="5" source="19" target="25" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="32" value="&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;FALSE&lt;/span&gt;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="30">
+                <mxCell id="32" value="&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;FALSE&lt;/span&gt;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="30" vertex="1" connectable="0">
                     <mxGeometry x="-0.2998" y="-1" relative="1" as="geometry">
                         <mxPoint as="offset"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="19" value="&lt;div&gt;&lt;span style=&quot;color: rgb(0, 0, 0); font-family: Helvetica; font-size: 12px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: center; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(251, 251, 251); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; float: none; display: inline !important;&quot;&gt;Validate chunk size:&lt;/span&gt;&lt;/div&gt;&lt;span style=&quot;color: rgb(0, 0, 0); font-family: Helvetica; font-size: 12px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: center; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(251, 251, 251); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; float: none; display: inline !important;&quot;&gt;update_packet_validate_size(received_bytes, parser-&amp;gt;write_idx, APP_MAX_SIZE)&lt;/span&gt;" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;" vertex="1" parent="5">
+                <mxCell id="19" value="&lt;div&gt;&lt;span style=&quot;color: rgb(0, 0, 0); font-family: Helvetica; font-size: 12px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: center; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(251, 251, 251); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; float: none; display: inline !important;&quot;&gt;Validate chunk size:&lt;/span&gt;&lt;/div&gt;&lt;span style=&quot;color: rgb(0, 0, 0); font-family: Helvetica; font-size: 12px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: center; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(251, 251, 251); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; float: none; display: inline !important;&quot;&gt;update_packet_validate_size(received_bytes, parser-&amp;gt;write_idx, APP_MAX_SIZE)&lt;/span&gt;" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;" parent="5" vertex="1">
                     <mxGeometry x="170" y="300" width="290" height="60" as="geometry"/>
                 </mxCell>
-                <mxCell id="29" style="edgeStyle=none;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" edge="1" parent="5" source="21" target="23">
+                <mxCell id="29" style="edgeStyle=none;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" parent="5" source="21" target="23" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="36" value="&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;TRUE&lt;/span&gt;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="29">
+                <mxCell id="36" value="&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;TRUE&lt;/span&gt;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="29" vertex="1" connectable="0">
                     <mxGeometry x="-0.1698" y="1" relative="1" as="geometry">
                         <mxPoint as="offset"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="31" style="edgeStyle=none;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="5" source="21" target="26">
+                <mxCell id="31" style="edgeStyle=none;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="5" source="21" target="26" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="34" value="FALSE" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="31">
+                <mxCell id="34" value="FALSE" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="31" vertex="1" connectable="0">
                     <mxGeometry x="-0.4595" y="1" relative="1" as="geometry">
                         <mxPoint as="offset"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="21" value="&lt;div&gt;Validate chunk crc16&lt;/div&gt;update_packet_validate_crc16(parser-&amp;gt;buffer, received_bytes)" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;" vertex="1" parent="5">
+                <mxCell id="21" value="&lt;div&gt;Validate chunk crc16&lt;/div&gt;update_packet_validate_crc16(parser-&amp;gt;buffer, received_bytes)" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;" parent="5" vertex="1">
                     <mxGeometry x="520" y="300" width="290" height="60" as="geometry"/>
                 </mxCell>
-                <mxCell id="37" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" edge="1" parent="5" source="23" target="27">
+                <mxCell id="37" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" parent="5" source="23" target="27" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="45" value="FALSE" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="37">
+                <mxCell id="45" value="FALSE" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="37" vertex="1" connectable="0">
                     <mxGeometry x="-0.053" y="3" relative="1" as="geometry">
                         <mxPoint as="offset"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="40" style="edgeStyle=none;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="5" source="23" target="43">
+                <mxCell id="40" style="edgeStyle=none;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="5" source="23" target="43" edge="1">
                     <mxGeometry relative="1" as="geometry">
                         <mxPoint x="945" y="420" as="targetPoint"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="41" value="TRUE" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="40">
+                <mxCell id="41" value="TRUE" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="40" vertex="1" connectable="0">
                     <mxGeometry x="-0.2711" y="-2" relative="1" as="geometry">
                         <mxPoint as="offset"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="23" value="&lt;div&gt;Is this first package&lt;/div&gt;parser-&amp;gt;first_packet" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;" vertex="1" parent="5">
+                <mxCell id="23" value="&lt;div&gt;Is this first package&lt;/div&gt;parser-&amp;gt;first_packet" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;" parent="5" vertex="1">
                     <mxGeometry x="860" y="300" width="170" height="60" as="geometry"/>
                 </mxCell>
-                <mxCell id="25" value="FAILED&lt;div&gt;Send NACK&lt;/div&gt;&lt;div&gt;reset buffer&lt;/div&gt;&lt;div&gt;return false&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="5">
+                <mxCell id="25" value="FAILED&lt;div&gt;Send NACK&lt;/div&gt;&lt;div&gt;reset buffer&lt;/div&gt;&lt;div&gt;return false&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" parent="5" vertex="1">
                     <mxGeometry x="255" y="420" width="120" height="60" as="geometry"/>
                 </mxCell>
-                <mxCell id="26" value="&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;FAILED&lt;/span&gt;&lt;div style=&quot;color: rgb(63, 63, 63); scrollbar-color: rgb(226, 226, 226) rgb(251, 251, 251);&quot;&gt;Send NACK&lt;/div&gt;&lt;div style=&quot;color: rgb(63, 63, 63); scrollbar-color: rgb(226, 226, 226) rgb(251, 251, 251);&quot;&gt;reset buffer&lt;/div&gt;&lt;div style=&quot;color: rgb(63, 63, 63); scrollbar-color: rgb(226, 226, 226) rgb(251, 251, 251);&quot;&gt;return false&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="5">
+                <mxCell id="26" value="&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;FAILED&lt;/span&gt;&lt;div style=&quot;color: rgb(63, 63, 63); scrollbar-color: rgb(226, 226, 226) rgb(251, 251, 251);&quot;&gt;Send NACK&lt;/div&gt;&lt;div style=&quot;color: rgb(63, 63, 63); scrollbar-color: rgb(226, 226, 226) rgb(251, 251, 251);&quot;&gt;reset buffer&lt;/div&gt;&lt;div style=&quot;color: rgb(63, 63, 63); scrollbar-color: rgb(226, 226, 226) rgb(251, 251, 251);&quot;&gt;return false&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" parent="5" vertex="1">
                     <mxGeometry x="605" y="420" width="120" height="60" as="geometry"/>
                 </mxCell>
-                <mxCell id="66" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="5" source="27" target="65">
+                <mxCell id="66" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" parent="5" source="27" target="65" edge="1">
                     <mxGeometry relative="1" as="geometry">
                         <Array as="points">
                             <mxPoint x="1440" y="800"/>
                         </Array>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="27" value="payload_size = received_bytes - UPDATE_PACKET_OVERHEAD_SIZE" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="5">
+                <mxCell id="27" value="payload_size = received_bytes - UPDATE_PACKET_OVERHEAD_SIZE" style="rounded=1;whiteSpace=wrap;html=1;" parent="5" vertex="1">
                     <mxGeometry x="1320" y="640" width="240" height="60" as="geometry"/>
                 </mxCell>
-                <mxCell id="50" style="edgeStyle=none;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="5" source="43" target="47">
+                <mxCell id="50" style="edgeStyle=none;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="5" source="43" target="47" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="52" value="FALSE" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="50">
+                <mxCell id="52" value="FALSE" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="50" vertex="1" connectable="0">
                     <mxGeometry x="0.0275" relative="1" as="geometry">
                         <mxPoint as="offset"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="54" style="edgeStyle=none;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="5" source="43" target="48">
+                <mxCell id="54" style="edgeStyle=none;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="5" source="43" target="48" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="55" value="TRUE" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="54">
+                <mxCell id="55" value="TRUE" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="54" vertex="1" connectable="0">
                     <mxGeometry x="0.1414" y="-2" relative="1" as="geometry">
                         <mxPoint as="offset"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="43" value="&lt;div&gt;First packet so i erase update sector flash memory:&lt;/div&gt;update_packet_flash_erase_update()" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;" vertex="1" parent="5">
+                <mxCell id="43" value="&lt;div&gt;First packet so i erase update sector flash memory:&lt;/div&gt;update_packet_flash_erase_update()" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;" parent="5" vertex="1">
                     <mxGeometry x="830" y="420" width="230" height="60" as="geometry"/>
                 </mxCell>
-                <mxCell id="44" value="&lt;div style=&quot;color: rgb(63, 63, 63); scrollbar-color: rgb(226, 226, 226) rgb(251, 251, 251);&quot;&gt;Check if whole chunk received:&lt;/div&gt;&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;parser-&amp;gt;rx_done == true&lt;/span&gt;" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;" vertex="1" parent="5">
+                <mxCell id="44" value="&lt;div style=&quot;color: rgb(63, 63, 63); scrollbar-color: rgb(226, 226, 226) rgb(251, 251, 251);&quot;&gt;Check if whole chunk received:&lt;/div&gt;&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;parser-&amp;gt;rx_done == true&lt;/span&gt;" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;" parent="5" vertex="1">
                     <mxGeometry x="230" y="60" width="190" height="60" as="geometry"/>
                 </mxCell>
-                <mxCell id="47" value="&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;FAILED&lt;/span&gt;&lt;div style=&quot;color: rgb(63, 63, 63); scrollbar-color: rgb(226, 226, 226) rgb(251, 251, 251);&quot;&gt;Send NACK&lt;/div&gt;&lt;div style=&quot;color: rgb(63, 63, 63); scrollbar-color: rgb(226, 226, 226) rgb(251, 251, 251);&quot;&gt;reset buffer&lt;/div&gt;&lt;div style=&quot;color: rgb(63, 63, 63); scrollbar-color: rgb(226, 226, 226) rgb(251, 251, 251);&quot;&gt;return false&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="5">
+                <mxCell id="47" value="&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;FAILED&lt;/span&gt;&lt;div style=&quot;color: rgb(63, 63, 63); scrollbar-color: rgb(226, 226, 226) rgb(251, 251, 251);&quot;&gt;Send NACK&lt;/div&gt;&lt;div style=&quot;color: rgb(63, 63, 63); scrollbar-color: rgb(226, 226, 226) rgb(251, 251, 251);&quot;&gt;reset buffer&lt;/div&gt;&lt;div style=&quot;color: rgb(63, 63, 63); scrollbar-color: rgb(226, 226, 226) rgb(251, 251, 251);&quot;&gt;return false&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" parent="5" vertex="1">
                     <mxGeometry x="1120" y="420" width="120" height="60" as="geometry"/>
                 </mxCell>
-                <mxCell id="51" style="edgeStyle=none;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="5" source="48" target="49">
+                <mxCell id="51" style="edgeStyle=none;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="5" source="48" target="49" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="53" value="FALSE" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="51">
+                <mxCell id="53" value="FALSE" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="51" vertex="1" connectable="0">
                     <mxGeometry x="0.0275" relative="1" as="geometry">
                         <mxPoint as="offset"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="60" style="edgeStyle=none;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="5" source="48" target="57">
+                <mxCell id="60" style="edgeStyle=none;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="5" source="48" target="57" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="61" value="TRUE" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="60">
+                <mxCell id="61" value="TRUE" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="60" vertex="1" connectable="0">
                     <mxGeometry x="-0.0875" y="1" relative="1" as="geometry">
                         <mxPoint as="offset"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="48" value="&lt;div&gt;Validate app header from first chunk:&lt;/div&gt;&lt;div&gt;update_packet_validate_app_header&lt;/div&gt;" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;" vertex="1" parent="5">
+                <mxCell id="48" value="&lt;div&gt;Validate app header from first chunk:&lt;/div&gt;&lt;div&gt;update_packet_validate_app_header&lt;/div&gt;" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;" parent="5" vertex="1">
                     <mxGeometry x="830" y="540" width="230" height="60" as="geometry"/>
                 </mxCell>
-                <mxCell id="49" value="&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;FAILED&lt;/span&gt;&lt;div style=&quot;color: rgb(63, 63, 63); scrollbar-color: rgb(226, 226, 226) rgb(251, 251, 251);&quot;&gt;Send NACK&lt;/div&gt;&lt;div style=&quot;color: rgb(63, 63, 63); scrollbar-color: rgb(226, 226, 226) rgb(251, 251, 251);&quot;&gt;reset buffer&lt;/div&gt;&lt;div style=&quot;color: rgb(63, 63, 63); scrollbar-color: rgb(226, 226, 226) rgb(251, 251, 251);&quot;&gt;return false&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="5">
+                <mxCell id="49" value="&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;FAILED&lt;/span&gt;&lt;div style=&quot;color: rgb(63, 63, 63); scrollbar-color: rgb(226, 226, 226) rgb(251, 251, 251);&quot;&gt;Send NACK&lt;/div&gt;&lt;div style=&quot;color: rgb(63, 63, 63); scrollbar-color: rgb(226, 226, 226) rgb(251, 251, 251);&quot;&gt;reset buffer&lt;/div&gt;&lt;div style=&quot;color: rgb(63, 63, 63); scrollbar-color: rgb(226, 226, 226) rgb(251, 251, 251);&quot;&gt;return false&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" parent="5" vertex="1">
                     <mxGeometry x="1120" y="540" width="120" height="60" as="geometry"/>
                 </mxCell>
-                <mxCell id="62" style="edgeStyle=none;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" edge="1" parent="5" source="57" target="27">
+                <mxCell id="62" style="edgeStyle=none;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" parent="5" source="57" target="27" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="57" value="Remove state for first packet:&lt;div&gt;parser-&amp;gt;first_packet = false&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="5">
+                <mxCell id="57" value="Remove state for first packet:&lt;div&gt;parser-&amp;gt;first_packet = false&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" parent="5" vertex="1">
                     <mxGeometry x="842.5" y="650" width="205" height="40" as="geometry"/>
                 </mxCell>
-                <mxCell id="69" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="5" source="65" target="68">
+                <mxCell id="69" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" parent="5" source="65" target="68" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="70" value="FALSE" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="69">
+                <mxCell id="70" value="FALSE" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="69" vertex="1" connectable="0">
                     <mxGeometry x="0.1364" y="-1" relative="1" as="geometry">
                         <mxPoint as="offset"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="72" style="edgeStyle=none;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="5" source="65" target="71">
+                <mxCell id="72" style="edgeStyle=none;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" parent="5" source="65" target="71" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="73" value="TRUE" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="72">
+                <mxCell id="73" value="TRUE" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="72" vertex="1" connectable="0">
                     <mxGeometry x="-0.0479" y="-1" relative="1" as="geometry">
                         <mxPoint as="offset"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="65" value="Write chunk:&lt;div&gt;update_packet_flash_write_chunk(UPDATE_STORAGE_START_ADDR + parser-&amp;gt;write_idx, parser-&amp;gt;buffer, payload_size)&lt;/div&gt;" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;" vertex="1" parent="5">
+                <mxCell id="65" value="Write chunk:&lt;div&gt;update_packet_flash_write_chunk(UPDATE_STORAGE_START_ADDR + parser-&amp;gt;write_idx, parser-&amp;gt;buffer, payload_size)&lt;/div&gt;" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;" parent="5" vertex="1">
                     <mxGeometry x="900" y="770" width="460" height="60" as="geometry"/>
                 </mxCell>
-                <mxCell id="68" value="&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;FAILED&lt;/span&gt;&lt;div style=&quot;color: rgb(63, 63, 63); scrollbar-color: rgb(226, 226, 226) rgb(251, 251, 251);&quot;&gt;Send NACK&lt;/div&gt;&lt;div style=&quot;color: rgb(63, 63, 63); scrollbar-color: rgb(226, 226, 226) rgb(251, 251, 251);&quot;&gt;reset buffer&lt;/div&gt;&lt;div style=&quot;color: rgb(63, 63, 63); scrollbar-color: rgb(226, 226, 226) rgb(251, 251, 251);&quot;&gt;return false&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="5">
+                <mxCell id="68" value="&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;FAILED&lt;/span&gt;&lt;div style=&quot;color: rgb(63, 63, 63); scrollbar-color: rgb(226, 226, 226) rgb(251, 251, 251);&quot;&gt;Send NACK&lt;/div&gt;&lt;div style=&quot;color: rgb(63, 63, 63); scrollbar-color: rgb(226, 226, 226) rgb(251, 251, 251);&quot;&gt;reset buffer&lt;/div&gt;&lt;div style=&quot;color: rgb(63, 63, 63); scrollbar-color: rgb(226, 226, 226) rgb(251, 251, 251);&quot;&gt;return false&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" parent="5" vertex="1">
                     <mxGeometry x="1380" y="840" width="120" height="60" as="geometry"/>
                 </mxCell>
-                <mxCell id="76" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;" edge="1" parent="5" source="71" target="74">
+                <mxCell id="76" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;" parent="5" source="71" target="74" edge="1">
                     <mxGeometry relative="1" as="geometry">
                         <Array as="points">
                             <mxPoint x="750" y="760"/>
@@ -194,136 +194,136 @@
                         </Array>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="71" value="Write successful, send ACK:&lt;div&gt;parser-&amp;gt;write_idx += payload_size&lt;/div&gt;&lt;div&gt;reset_buffer(parser)&lt;/div&gt;&lt;div&gt;parser-&amp;gt;tx_cb(&amp;amp;_ACK)&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="5">
+                <mxCell id="71" value="Write successful, send ACK:&lt;div&gt;parser-&amp;gt;write_idx += payload_size&lt;/div&gt;&lt;div&gt;reset_buffer(parser)&lt;/div&gt;&lt;div&gt;parser-&amp;gt;tx_cb(&amp;amp;_ACK)&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" parent="5" vertex="1">
                     <mxGeometry x="655" y="760" width="200" height="80" as="geometry"/>
                 </mxCell>
-                <mxCell id="82" style="edgeStyle=none;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="5" source="74" target="77">
+                <mxCell id="82" style="edgeStyle=none;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="5" source="74" target="77" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="74" value="Check if its the last packet:&lt;div&gt;packet_parser_check_rx_end(parser)&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="5">
+                <mxCell id="74" value="Check if its the last packet:&lt;div&gt;packet_parser_check_rx_end(parser)&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" parent="5" vertex="1">
                     <mxGeometry x="305" y="520" width="220" height="60" as="geometry"/>
                 </mxCell>
-                <mxCell id="85" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="5" source="78" target="84">
+                <mxCell id="85" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="5" source="78" target="84" edge="1">
                     <mxGeometry relative="1" as="geometry">
                         <Array as="points">
                             <mxPoint x="140" y="750"/>
                         </Array>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="86" value="FALSE" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="85">
+                <mxCell id="86" value="FALSE" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="85" vertex="1" connectable="0">
                     <mxGeometry x="-0.06" y="3" relative="1" as="geometry">
                         <mxPoint as="offset"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="88" style="edgeStyle=none;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="5" source="78" target="87">
+                <mxCell id="88" style="edgeStyle=none;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="5" source="78" target="87" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="89" value="TRUE" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="88">
+                <mxCell id="89" value="TRUE" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="88" vertex="1" connectable="0">
                     <mxGeometry x="0.008" y="2" relative="1" as="geometry">
                         <mxPoint as="offset"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="78" value="&lt;div&gt;Validate crc32 of the whole update image:&lt;/div&gt;update_packet_flash_validate_image_crc32(UPDATE_STORAGE_START_ADDR, parser-&amp;gt;fw_size)" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;" vertex="1" parent="5">
+                <mxCell id="78" value="&lt;div&gt;Validate crc32 of the whole update image:&lt;/div&gt;update_packet_flash_validate_image_crc32(UPDATE_STORAGE_START_ADDR, parser-&amp;gt;fw_size)" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;" parent="5" vertex="1">
                     <mxGeometry x="170" y="720" width="490" height="60" as="geometry"/>
                 </mxCell>
-                <mxCell id="83" value="" style="edgeStyle=none;html=1;" edge="1" parent="5" source="77" target="78">
+                <mxCell id="83" value="" style="edgeStyle=none;html=1;" parent="5" source="77" target="78" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="90" value="TRUE" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="83">
+                <mxCell id="90" value="TRUE" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="83" vertex="1" connectable="0">
                     <mxGeometry x="-0.1518" y="-2" relative="1" as="geometry">
                         <mxPoint as="offset"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="77" value="parser-&amp;gt;write_idx == parser-&amp;gt;fw_size" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;" vertex="1" parent="5">
+                <mxCell id="77" value="parser-&amp;gt;write_idx == parser-&amp;gt;fw_size" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;" parent="5" vertex="1">
                     <mxGeometry x="310" y="620" width="210" height="60" as="geometry"/>
                 </mxCell>
-                <mxCell id="92" style="edgeStyle=none;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="5" source="84" target="91">
+                <mxCell id="92" style="edgeStyle=none;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="5" source="84" target="91" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="95" value="Parse rest of the chunks" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="92">
+                <mxCell id="95" value="Parse rest of the chunks" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="92" vertex="1" connectable="0">
                     <mxGeometry x="-0.077" relative="1" as="geometry">
                         <mxPoint y="-1" as="offset"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="84" value="&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;FAILED&lt;/span&gt;&lt;div style=&quot;color: rgb(63, 63, 63); scrollbar-color: rgb(226, 226, 226) rgb(251, 251, 251);&quot;&gt;Send NACK&lt;/div&gt;&lt;div style=&quot;color: rgb(63, 63, 63); scrollbar-color: rgb(226, 226, 226) rgb(251, 251, 251);&quot;&gt;reset buffer&lt;/div&gt;&lt;div style=&quot;color: rgb(63, 63, 63); scrollbar-color: rgb(226, 226, 226) rgb(251, 251, 251);&quot;&gt;return false&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="5">
+                <mxCell id="84" value="&lt;span style=&quot;color: rgb(0, 0, 0);&quot;&gt;FAILED&lt;/span&gt;&lt;div style=&quot;color: rgb(63, 63, 63); scrollbar-color: rgb(226, 226, 226) rgb(251, 251, 251);&quot;&gt;Send NACK&lt;/div&gt;&lt;div style=&quot;color: rgb(63, 63, 63); scrollbar-color: rgb(226, 226, 226) rgb(251, 251, 251);&quot;&gt;reset buffer&lt;/div&gt;&lt;div style=&quot;color: rgb(63, 63, 63); scrollbar-color: rgb(226, 226, 226) rgb(251, 251, 251);&quot;&gt;return false&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" parent="5" vertex="1">
                     <mxGeometry x="80" y="840" width="120" height="60" as="geometry"/>
                 </mxCell>
-                <mxCell id="93" style="edgeStyle=none;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="5" source="87" target="91">
+                <mxCell id="93" style="edgeStyle=none;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="5" source="87" target="91" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="94" value="Technically never&amp;nbsp;&lt;div&gt;gets to here&lt;/div&gt;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="93">
+                <mxCell id="94" value="Technically never&amp;nbsp;&lt;div&gt;gets to here&lt;/div&gt;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="93" vertex="1" connectable="0">
                     <mxGeometry x="-0.0277" y="-2" relative="1" as="geometry">
                         <mxPoint y="1" as="offset"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="87" value="Every check passed, rebooting:&lt;div&gt;HAL_NVIC_SystemReset()&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="5">
+                <mxCell id="87" value="Every check passed, rebooting:&lt;div&gt;HAL_NVIC_SystemReset()&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" parent="5" vertex="1">
                     <mxGeometry x="322.5" y="830" width="185" height="60" as="geometry"/>
                 </mxCell>
-                <mxCell id="91" value="Parsing finished:&lt;div&gt;return true&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="5">
+                <mxCell id="91" value="Parsing finished:&lt;div&gt;return true&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" parent="5" vertex="1">
                     <mxGeometry x="202.5" y="960" width="120" height="60" as="geometry"/>
                 </mxCell>
-                <mxCell id="3" value="main Application" style="swimlane;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                <mxCell id="3" value="main Application" style="swimlane;whiteSpace=wrap;html=1;" parent="1" vertex="1">
                     <mxGeometry x="-550" y="-1180" width="470" height="620" as="geometry"/>
                 </mxCell>
-                <mxCell id="2" value="&lt;div&gt;Initializations:&lt;/div&gt;custom_logger_init(&amp;amp;huart1)&lt;div&gt;update_packet_parser_init(&amp;amp;packet_parser, &amp;amp;huart2, &amp;amp;htim4, update_packet_parser_tx_cb)&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;imageWidth=24;imageVerticalAlign=top;verticalAlign=middle;arcSize=11;" vertex="1" parent="3">
+                <mxCell id="2" value="&lt;div&gt;Initializations:&lt;/div&gt;custom_logger_init(&amp;amp;huart1)&lt;div&gt;update_packet_parser_init(&amp;amp;packet_parser, &amp;amp;huart2, &amp;amp;htim4, update_packet_parser_tx_cb)&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;imageWidth=24;imageVerticalAlign=top;verticalAlign=middle;arcSize=11;" parent="3" vertex="1">
                     <mxGeometry x="40" y="70" width="400" height="80" as="geometry"/>
                 </mxCell>
-                <mxCell id="4" value="Main loop:&lt;div&gt;update_packet_parser_parse(&amp;amp;packet_parser)&lt;/div&gt;&lt;div&gt;LED Blink every 150ms&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="3">
+                <mxCell id="4" value="Main loop:&lt;div&gt;update_packet_parser_parse(&amp;amp;packet_parser)&lt;/div&gt;&lt;div&gt;LED Blink every 150ms&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" parent="3" vertex="1">
                     <mxGeometry x="40" y="200" width="400" height="80" as="geometry"/>
                 </mxCell>
-                <mxCell id="8" value="Interrupts/Callbacks:&lt;div&gt;UART: update_packet_parser_uart_callback(&amp;amp;packet_parser, huart)&lt;/div&gt;&lt;div&gt;TIM4: update_packet_parser_tim_callback(&amp;amp;packet_parser, htim)&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="3">
+                <mxCell id="8" value="Interrupts/Callbacks:&lt;div&gt;UART: update_packet_parser_uart_callback(&amp;amp;packet_parser, huart)&lt;/div&gt;&lt;div&gt;TIM4: update_packet_parser_tim_callback(&amp;amp;packet_parser, htim)&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" parent="3" vertex="1">
                     <mxGeometry x="40" y="340" width="400" height="60" as="geometry"/>
                 </mxCell>
-                <mxCell id="96" value="Interrupts" style="swimlane;whiteSpace=wrap;html=1;startSize=23;" vertex="1" parent="1">
+                <mxCell id="96" value="Interrupts" style="swimlane;whiteSpace=wrap;html=1;startSize=23;" parent="1" vertex="1">
                     <mxGeometry x="100" y="-1790" width="965" height="570" as="geometry"/>
                 </mxCell>
-                <mxCell id="97" value="UART RX Callback" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;" vertex="1" parent="96">
+                <mxCell id="97" value="UART RX Callback" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;" parent="96" vertex="1">
                     <mxGeometry x="65" y="60" width="265" height="480" as="geometry"/>
                 </mxCell>
-                <mxCell id="98" value="Receive byte in:&lt;div&gt;parser-&amp;gt;rx_byte&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="96">
+                <mxCell id="98" value="Receive byte in:&lt;div&gt;parser-&amp;gt;rx_byte&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" parent="96" vertex="1">
                     <mxGeometry x="100" y="110" width="200" height="60" as="geometry"/>
                 </mxCell>
-                <mxCell id="99" value="Stop timeout timer if byte received in 50ms window:&lt;br&gt;HAL_TIM_Base_Stop_IT(parser-&amp;gt;tim)" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="96">
+                <mxCell id="99" value="Stop timeout timer if byte received in 50ms window:&lt;br&gt;HAL_TIM_Base_Stop_IT(parser-&amp;gt;tim)" style="rounded=1;whiteSpace=wrap;html=1;" parent="96" vertex="1">
                     <mxGeometry x="97.5" y="190" width="200" height="60" as="geometry"/>
                 </mxCell>
-                <mxCell id="100" value="Put byte into buffer:&lt;div&gt;parser-&amp;gt;buffer[parser-&amp;gt;idx++] = parser-&amp;gt;rx_byte&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="96">
+                <mxCell id="100" value="Put byte into buffer:&lt;div&gt;parser-&amp;gt;buffer[parser-&amp;gt;idx++] = parser-&amp;gt;rx_byte&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" parent="96" vertex="1">
                     <mxGeometry x="100" y="270" width="200" height="60" as="geometry"/>
                 </mxCell>
-                <mxCell id="101" value="Rearm UART RX IT:&lt;div&gt;HAL_UART_Receive_IT(parser-&amp;gt;huart, &amp;amp;parser-&amp;gt;rx_byte, 1)&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="96">
+                <mxCell id="101" value="Rearm UART RX IT:&lt;div&gt;HAL_UART_Receive_IT(parser-&amp;gt;huart, &amp;amp;parser-&amp;gt;rx_byte, 1)&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" parent="96" vertex="1">
                     <mxGeometry x="90" y="360" width="200" height="60" as="geometry"/>
                 </mxCell>
-                <mxCell id="102" value="Start the timeout timer:&lt;div&gt;HAL_TIM_Base_Start_IT(parser-&amp;gt;tmi)&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="96">
+                <mxCell id="102" value="Start the timeout timer:&lt;div&gt;HAL_TIM_Base_Start_IT(parser-&amp;gt;tmi)&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" parent="96" vertex="1">
                     <mxGeometry x="90" y="450" width="200" height="60" as="geometry"/>
                 </mxCell>
-                <mxCell id="103" value="Timer timeout Callback/IT" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;" vertex="1" parent="96">
+                <mxCell id="103" value="Timer timeout Callback/IT" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;" parent="96" vertex="1">
                     <mxGeometry x="365" y="60" width="570" height="370" as="geometry"/>
                 </mxCell>
-                <mxCell id="104" value="Stop the timer:&lt;div&gt;HAL_TIM_Base_Sttop_IT(parser-&amp;gt;tim)&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="96">
+                <mxCell id="104" value="Stop the timer:&lt;div&gt;HAL_TIM_Base_Sttop_IT(parser-&amp;gt;tim)&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" parent="96" vertex="1">
                     <mxGeometry x="392.5" y="110" width="227.5" height="60" as="geometry"/>
                 </mxCell>
-                <mxCell id="106" value="Received minimal viable packet:&lt;div&gt;parser-&amp;gt;rx_done = true&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="96">
+                <mxCell id="106" value="Received minimal viable packet:&lt;div&gt;parser-&amp;gt;rx_done = true&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" parent="96" vertex="1">
                     <mxGeometry x="401.25" y="290" width="227.5" height="60" as="geometry"/>
                 </mxCell>
-                <mxCell id="107" value="I received malformed packet, NACK that:&lt;div&gt;&lt;font color=&quot;#000000&quot;&gt;parser-&amp;gt;tx_cb(&amp;amp;_NACK)&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font color=&quot;#000000&quot;&gt;parser-&amp;gt;idx=0&lt;br&gt;&lt;/font&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="96">
+                <mxCell id="107" value="I received malformed packet, NACK that:&lt;div&gt;&lt;font color=&quot;#000000&quot;&gt;parser-&amp;gt;tx_cb(&amp;amp;_NACK)&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font color=&quot;#000000&quot;&gt;parser-&amp;gt;idx=0&lt;br&gt;&lt;/font&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;" parent="96" vertex="1">
                     <mxGeometry x="690" y="190" width="227.5" height="60" as="geometry"/>
                 </mxCell>
-                <mxCell id="109" style="edgeStyle=none;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" edge="1" parent="96" source="108" target="107">
+                <mxCell id="109" style="edgeStyle=none;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" parent="96" source="108" target="107" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="110" value="NO" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="109">
+                <mxCell id="110" value="NO" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="109" vertex="1" connectable="0">
                     <mxGeometry x="0.1882" relative="1" as="geometry">
                         <mxPoint as="offset"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="111" style="edgeStyle=none;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" edge="1" parent="96" source="108" target="106">
+                <mxCell id="111" style="edgeStyle=none;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" parent="96" source="108" target="106" edge="1">
                     <mxGeometry relative="1" as="geometry"/>
                 </mxCell>
-                <mxCell id="112" value="YES" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="111">
+                <mxCell id="112" value="YES" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="111" vertex="1" connectable="0">
                     <mxGeometry x="-0.4535" y="2" relative="1" as="geometry">
                         <mxPoint as="offset"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="108" value="&lt;span style=&quot;color: rgb(0, 0, 0); font-family: Helvetica; font-size: 12px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: center; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(251, 251, 251); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; float: none; display: inline !important;&quot;&gt;Check if i received minimal viable packet:&lt;/span&gt;&lt;div style=&quot;forced-color-adjust: none; color: rgb(63, 63, 63); scrollbar-color: rgb(226, 226, 226) rgb(251, 251, 251); font-family: Helvetica; font-size: 12px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: center; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(251, 251, 251); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;&quot;&gt;parser-&amp;gt;idx &amp;gt; UPDATE_PACKET_OVERHEAD_SIZE&lt;/div&gt;" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;" vertex="1" parent="96">
+                <mxCell id="108" value="&lt;span style=&quot;color: rgb(0, 0, 0); font-family: Helvetica; font-size: 12px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: center; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(251, 251, 251); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; float: none; display: inline !important;&quot;&gt;Check if i received minimal viable packet:&lt;/span&gt;&lt;div style=&quot;forced-color-adjust: none; color: rgb(63, 63, 63); scrollbar-color: rgb(226, 226, 226) rgb(251, 251, 251); font-family: Helvetica; font-size: 12px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: center; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(251, 251, 251); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;&quot;&gt;parser-&amp;gt;idx &amp;gt; UPDATE_PACKET_OVERHEAD_SIZE&lt;/div&gt;" style="shape=parallelogram;perimeter=parallelogramPerimeter;whiteSpace=wrap;html=1;fixedSize=1;" parent="96" vertex="1">
                     <mxGeometry x="380" y="190" width="270" height="60" as="geometry"/>
                 </mxCell>
             </root>

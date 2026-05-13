@@ -6,6 +6,17 @@
 
 #include "app_header.h"
 
+/**
+ * @brief Validate received chunk size
+ *
+ * Checks if the packet is not malformed, or if we have enough memory to store
+ * this new chunk. write_idx represents how much bytes have we wrote so far
+ *
+ * @param received Address for where to write the received chunk
+ * @param write_idx Current write index
+ * @param max_size Max size of out application/new firmware
+ * @return true/false to signal if we wrote chunk successfully or not
+ */
 bool update_packet_validate_size(const uint16_t received,
                                  const uint32_t write_idx,
                                  const uint32_t max_size) {
@@ -27,6 +38,14 @@ bool update_packet_validate_size(const uint16_t received,
   return true;
 }
 
+/**
+ * @brief Check crc16 of received chunk
+ *
+ *
+ * @param buffer Pointer to the buffer that stores chunk data/payload
+ * @param received Received payload size
+ * @return true/false if crc16 matches expected
+ */
 bool update_packet_validate_crc16(const uint8_t *buffer, uint16_t received) {
   //
 
@@ -53,6 +72,16 @@ bool update_packet_validate_crc16(const uint8_t *buffer, uint16_t received) {
   return true;
 }
 
+/**
+ * @brief Write chunk to FLASH
+ *
+ * Validate app header, and if it is valid assign the firmware size to the
+ * out_size parameter
+ *
+ * @param buffer pointer to uint8_t buffer that stored app header
+ * @param out_size Pointer to where i want to write the size of firmware
+ * @return true/false if the header is valid
+ */
 bool update_packet_validate_app_header(const uint8_t *buffer,
                                        uint32_t *out_size) {
   //

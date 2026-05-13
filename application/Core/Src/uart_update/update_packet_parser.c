@@ -13,20 +13,37 @@
 static const uint8_t _ACK = UPDATE_PACKET_ACK;
 static const uint8_t _NACK = UPDATE_PACKET_NACK;
 
+/**
+ * @brief Reset packet parser state for the next package.
+ *
+ * This is used when, for example crc32 fails and we want to retransmit new
+ * package, so we have to reset state of packet parser
+ *
+ *
+ * @param parser parser of type struct update_packet_parser_t.
+ * @return Nothing
+ */
 static void update_packet_parser_reset(struct update_packet_parser_t *parser) {
-  // parser->huart = huart;
-  // parser->tim = tim;
   parser->rx_done = false;
   parser->idx = 0;
   parser->write_idx = 0;
   parser->first_packet = true;
   memset(parser->buffer, 0, UPDATE_PACKET_BUFFER_SIZE);
-  // parser->tx_cb = tx_cb;
-
-  // TODO: Move into some callback or something
-  // HAL_UART_Receive_IT(parser->huart, &parser->rx_byte, 1);
 }
 
+/**
+ * @brief Initialize packet parser.
+ *
+ * For the tx_cb, you have to pass a callback that will be executed for ACK and
+ * NACK of packets. In my case i used UART IT
+ *
+ * @param parser Pointer to parser.
+ * @param huart Pointer to huart.
+ * @param tim Pointer to timer.
+ * @param (*tx_cb) Pointer to function that receives const uint8_t*.
+ * @param[in,out] buffer Description of a buffer used for both input and output.
+ * @return Description of the return value (e.g., 0 for success, -1 for error).
+ */
 void update_packet_parser_init(struct update_packet_parser_t *parser,
                                UART_HandleTypeDef *huart,
                                TIM_HandleTypeDef *tim,
@@ -44,10 +61,27 @@ void update_packet_parser_init(struct update_packet_parser_t *parser,
   HAL_UART_Receive_IT(parser->huart, &parser->rx_byte, 1);
 }
 
+/**
+ * @brief Reset buffer idx
+ *
+ *
+ * @param parser Pointer to parser.
+ * @return Nothing
+ */
 static void reset_buffer(struct update_packet_parser_t *parser) {
   parser->idx = 0;
 }
 
+/**
+ * @brief Helper function. Check if we received last packet
+ *
+ * If we wrote in flash exactly the same size as firmware size, we can validate
+ * crc32. On success it restarts the system. On fail it resets parser completely
+ * so that we can receive new image
+ *
+ * @param parser Pointer to parser.
+ * @return Nothing
+ */
 static void packet_parser_check_rx_end(struct update_packet_parser_t *parser) {
   if (parser->write_idx == parser->fw_size) {
     /* i received everything so i can rearm erase flag to delete sector.
@@ -68,7 +102,24 @@ static void packet_parser_check_rx_end(struct update_packet_parser_t *parser) {
   }
 }
 
-bool update_packet_parser_parse(struct update_packet_parser_t *parser) {
+/**
+ * @brief Parse and process received chunk of bytes
+ *
+ * When TIM callback stops the timer, rx done flag is set and this function is
+ * executed. In here we are validating the size of chunk, chunk's crc16. If that
+ * is ok and this is the first packet it can erase the update storage sectors
+ * and it checks validity of the app header. If any of this fails, it returns
+ * NACK. If everything is ok it stores the received chunk on FLASH.
+ * If everything is ok, it sends back ACK and resets buffer. After that it
+ * checks if we are at the end of the packet RX. If we are it validates crc32
+ * and reboots system upon successful validation
+ *
+ *
+ * @param parser Pointer to parser.
+ * @return true/false depending on if all checks passed or not
+ */
+bool update_packet_parser_parse_and_process(
+    struct update_packet_parser_t *parser) {
 
   if (!parser->rx_done) {
     return false;
@@ -99,15 +150,17 @@ bool update_packet_parser_parse(struct update_packet_parser_t *parser) {
 
   /* check if first packet so i can check the header */
   if (parser->first_packet) {
-    /* erase flash sector 6 and 7 in this case */
-    if (!update_packet_flash_erase_update()) {
+
+    if (!update_packet_validate_app_header(parser->buffer, &parser->fw_size)) {
       parser->tx_cb(&_NACK);
       reset_buffer(parser);
 
       return false;
     }
 
-    if (!update_packet_validate_app_header(parser->buffer, &parser->fw_size)) {
+    /* grab firmware size */
+    /* erase flash sector 6 (and 7 if needed) in this case */
+    if (!update_packet_flash_erase_update(parser->fw_size)) {
       parser->tx_cb(&_NACK);
       reset_buffer(parser);
 
@@ -131,14 +184,23 @@ bool update_packet_parser_parse(struct update_packet_parser_t *parser) {
   reset_buffer(parser);
   parser->tx_cb(&_ACK);
 
-  /* TODO: Testing, moved this here so that i can confirm/ACK the last package
-   * i received and only after that do i check if we are at end of tx, since
-   * this will reboot the system */
   packet_parser_check_rx_end(parser);
 
   return true;
 }
 
+/**
+ * @brief UART Callback.
+ *
+ * UART Interrupt. When we receive a byte on specified huart, it stops the
+ * timer, fills the buffer with the received byte, and starts the timer. Like
+ * this, timeout of timer is never triggered and we can keep on receiving bytes
+ * untill we either have full chunk received or we receive remainder or whatever
+ *
+ * @param parser Pointer to parser
+ * @param huart Pointer to huart
+ * @return Nothing
+ */
 void update_packet_parser_uart_callback(struct update_packet_parser_t *parser,
                                         UART_HandleTypeDef *huart) {
   if (huart->Instance == parser->huart->Instance) {
@@ -153,6 +215,18 @@ void update_packet_parser_uart_callback(struct update_packet_parser_t *parser,
   }
 }
 
+/**
+ * @brief TIM Callback
+ *
+ * When timer expires (50ms timeout), interrupt is triggered. Stops the timer
+ * and check if the buffer has minimal viable packet (at least 1 byte bigger
+ * than packet overhead size). Marks the rx_done so that the packet can get
+ * processed by the function in main loop (parse and process)
+ *
+ * @param *parser Parser of type struct update_packet_parser_t.
+ * @param *htim Pointer to timer in TIM IT.
+ * @return Nothing
+ */
 void update_packet_parser_tim_callback(struct update_packet_parser_t *parser,
                                        TIM_HandleTypeDef *htim) {
 
@@ -160,7 +234,6 @@ void update_packet_parser_tim_callback(struct update_packet_parser_t *parser,
     HAL_TIM_Base_Stop_IT(parser->tim);
     if (parser->idx > UPDATE_PACKET_OVERHEAD_SIZE) {
 
-      custom_logger_log("Received chunk size {%d}", parser->idx);
       parser->rx_done = true;
     } else {
       parser->tx_cb(&_NACK);

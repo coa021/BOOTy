@@ -34,7 +34,7 @@ ser = serial.Serial(
     parity=serial.PARITY_NONE,
     stopbits=serial.STOPBITS_ONE,
     bytesize=serial.EIGHTBITS,
-    timeout=2,
+    timeout=4,
 )
 
 print("tryint to send stuff")
@@ -77,7 +77,7 @@ while sent < firmware_size:
     if byte == ACK:
         # print("ACK")
         sent += len(chunk)
-        print(f"Sent {sent} / {firmware_size}", sep="\r")
+        print(f"Sent {sent} / {firmware_size}", end="\r")
     elif byte == NACK:
         print("NACK received")
 

@@ -37,14 +37,14 @@ static const uint8_t _PUBLIC_KEY[64] = {
 // clang-format on
 
 enum verify_result_t bl_verify_app(const struct app_header_t *app_header) {
-  custom_logger_log("[BL]: bl_veify_app address: %x\r\n", app_header);
-  custom_logger_log("[BL]: bl_verify_app: verify magic constant\r\n");
+  custom_logger_log("[BOOTy]: bl_veify_app address: %x\r\n", app_header);
+  custom_logger_log("[BOOTy]: bl_verify_app: verify magic constant\r\n");
   /* Checking magic constant */
   if (app_header->magic != APP_MAGIC_CONSTANT) {
     return VERIFY_BAD_MAGIC;
   }
 
-  custom_logger_log("[BL]: bl_verify_app: verify fw size\r\n");
+  custom_logger_log("[BOOTy]: bl_verify_app: verify fw size\r\n");
   /* Check firmware size */
   if (app_header->size == 0 || app_header->size > APP_MAX_SIZE) {
     return VERIFY_BAD_SIZE;
@@ -59,9 +59,9 @@ enum verify_result_t bl_verify_app(const struct app_header_t *app_header) {
   TODO: Critical error! I have sent half a package and bricked my device XD im
   updating only when update version is GT main app version */
 
-  custom_logger_log("[BL]: bl_verify_app: verify CRC check\r\n");
+  custom_logger_log("[BOOTy]: bl_verify_app: verify CRC check\r\n");
 
-  custom_logger_log("[BL]: im checking address %x\r\n",
+  custom_logger_log("[BOOTy]: im checking address %x\r\n",
                     (const uint8_t *)app_header + APP_HEADER_SIZE);
   uint32_t crc =
       crc32((const uint8_t *)app_header + APP_HEADER_SIZE, app_header->size);
@@ -76,18 +76,18 @@ enum verify_result_t bl_verify_app(const struct app_header_t *app_header) {
                    app_header->size);
   (void)tc_sha256_final(digest, &s);
 
-  custom_logger_log("[BL]: before ecdsa\r\n");
+  custom_logger_log("[BOOTy]: before ecdsa\r\n");
 
   /* Signature */
   int ecdsa_res = uECC_verify(_PUBLIC_KEY, digest, sizeof(digest),
                               app_header->signature, uECC_secp256r1());
 
-  custom_logger_log("[BL]: bl_verify_app: verify signature\r\n");
+  custom_logger_log("[BOOTy]: bl_verify_app: verify signature\r\n");
   if (ecdsa_res != 1) {
     return VERIFY_BAD_SIGNATURE;
   }
 
-  custom_logger_log("[BL]: bl_verify_app: all ok\r\n");
+  custom_logger_log("[BOOTy]: bl_verify_app: all ok\r\n");
 
   /* TODO:VERIFY_BAD_VERSION For later, add anti rollback guard */
 

@@ -38,7 +38,8 @@ void update_packet_parser_init(struct update_packet_parser_t *parser,
                                UART_HandleTypeDef *huart,
                                TIM_HandleTypeDef *tim,
                                void (*tx_cb)(const uint8_t *));
-bool update_packet_parser_parse(struct update_packet_parser_t *parser);
+bool update_packet_parser_parse_and_process(
+    struct update_packet_parser_t *parser);
 
 void update_packet_parser_uart_callback(struct update_packet_parser_t *parser,
                                         UART_HandleTypeDef *huart);
