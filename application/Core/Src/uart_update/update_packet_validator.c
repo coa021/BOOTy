@@ -58,10 +58,15 @@ bool update_packet_validate_crc16(const uint8_t *buffer, uint16_t received) {
   }
 
   /* i need to extract last 2 bytes of the package */
+  /* TODO: sanity check, my overhead is now 7 bytes */
+  /* since crc16 is always last 2 bytes, i subtract that */
   uint16_t payload_size = received - UPDATE_PACKET_OVERHEAD_SIZE;
-  uint16_t calculated_crc16 = crc16(buffer, payload_size);
+  uint16_t calculated_crc16 =
+      crc16(buffer + UPDATE_PACKET_HEADER_SIZE, payload_size);
+
+  uint16_t crc_offset = received - UPDATE_PACKET_CRC16_SIZE;
   uint16_t expected_crc16 =
-      buffer[payload_size] | (buffer[payload_size + 1] << 8);
+      (uint16_t)buffer[crc_offset] | (uint16_t)(buffer[crc_offset + 1] << 8);
 
   if (calculated_crc16 != expected_crc16) {
     custom_logger_log("Missmatch in crc16; expected: %d,\tactual: %d\r\n",
@@ -85,7 +90,8 @@ bool update_packet_validate_crc16(const uint8_t *buffer, uint16_t received) {
 bool update_packet_validate_app_header(const uint8_t *buffer,
                                        uint32_t *out_size) {
   //
-  struct app_header_t *hdr = (struct app_header_t *)buffer;
+  struct app_header_t *hdr =
+      (struct app_header_t *)(buffer + UPDATE_PACKET_HEADER_SIZE);
 
   if (hdr->magic != APP_MAGIC_CONSTANT) {
     custom_logger_log("Error with app header in new package. Missing MAGIC "
@@ -104,7 +110,7 @@ bool update_packet_validate_app_header(const uint8_t *buffer,
     return false;
   }
 
-  *out_size = hdr->size + APP_HEADER_SIZE;
+  *out_size = total_size;
 
   return true;
 }

@@ -40,31 +40,26 @@ ser = serial.Serial(
 print("tryint to send stuff")
 sent = 0
 BUFFER_SIZE = 256
+package_counter = 1
+LAST_PACKAGE_FLAG = 0x1
+NORMAL_PACKAGE_FLAG = 0x0
 
-
-# message = b"Hello world how are you?"
-# crc = custom_crc16(message)
-
-# payload = message + crc
-
-# ser.write(payload)
-# response = ser.read(1)
-# if not response:
-#     print("Timeout waiting for ACK")
-
-# byte = response[0]
-# if byte == ACK:
-#     print("ACK")
-#     sent += len(chunk)
-#     print(f"Sent {sent} / {firmware_size}")
-# elif byte == NACK:
-#     print("NACK received")
 while sent < firmware_size:
+    flag = (
+        LAST_PACKAGE_FLAG
+        if (sent + BUFFER_SIZE >= firmware_size)
+        else NORMAL_PACKAGE_FLAG
+    )
+    header = struct.pack("<IB", package_counter, flag)
     chunk = bytes(firmware[sent : sent + BUFFER_SIZE])
     crc = custom_crc16(chunk)
 
-    payload = bytes(chunk + crc)
-    # print(f"Trying to send following: {payload}\n\n")
+    payload = bytes(header + chunk + crc)
+
+    print(
+        f"header={len(header)}, chunk={len(chunk)}, crc={len(crc)}, total={len(payload)}"
+    )
+    print(f"Trying to send following: {payload}\n\n")
 
     ser.write(payload)
 
@@ -77,6 +72,7 @@ while sent < firmware_size:
     if byte == ACK:
         # print("ACK")
         sent += len(chunk)
+        package_counter += 1
         print(f"Sent {sent} / {firmware_size}", end="\r")
     elif byte == NACK:
         print("NACK received")

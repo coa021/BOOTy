@@ -5,15 +5,23 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-// Code for header body
+/* I want to send additional counter and end flag as header */
+#define UPDATE_PACKET_HEADER_COUNTER_SIZE 4
+#define UPDATE_PACKET_HEADER_END_SIZE 1
+#define UPDATE_PACKET_HEADER_SIZE                                              \
+  (UPDATE_PACKET_HEADER_COUNTER_SIZE + UPDATE_PACKET_HEADER_END_SIZE)
 
 #define UPDATE_PACKET_CHUNK_SIZE 256
 // length and crc16?
-#define UPDATE_PACKET_OVERHEAD_SIZE 2
+#define UPDATE_PACKET_CRC16_SIZE 2
+#define UPDATE_PACKET_OVERHEAD_SIZE                                            \
+  (UPDATE_PACKET_HEADER_SIZE + UPDATE_PACKET_CRC16_SIZE)
 // 1 is for data
 #define UPDATE_PACKET_MIN_SIZE (UPDATE_PACKET_OVERHEAD_SIZE + 1)
 #define UPDATE_PACKET_BUFFER_SIZE                                              \
   (UPDATE_PACKET_CHUNK_SIZE + UPDATE_PACKET_OVERHEAD_SIZE)
+
+#define UPDATE_PACKET_FIRST_PACKET_INDEX 1
 
 #define UPDATE_PACKET_ACK 0x01
 #define UPDATE_PACKET_NACK 0x15
@@ -28,7 +36,13 @@ struct update_packet_parser_t {
 
   uint32_t write_idx;
 
-  bool first_packet;
+  uint32_t previous_counter;
+  uint32_t current_counter;
+
+  uint8_t tx_end;
+
+  /* TODO: technically i would not need this now */
+  // bool first_packet;
   uint32_t fw_size;
 
   void (*tx_cb)(const uint8_t *flag);
