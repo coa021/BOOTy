@@ -1,5 +1,23 @@
+/**
+ * @file bl_verify.c
+ * @brief Firmware image verification implementation for the bootloader.
+ *
+ * This module validates firmware images before execution or installation.
+ *
+ * Verification stages include:
+ * - Application magic constant validation
+ * - Firmware size validation
+ * - CRC32 integrity verification
+ * - SHA-256 digest generation
+ * - ECDSA signature verification
+ * - (Planned) anti-rollback version validation
+ *
+ * The verification process ensures that only valid and cryptographically
+ * signed firmware images are accepted by the bootloader.
+ */
+
 #include "bl_verify.h"
-#include "custom_crc/custom_crc32.h"
+#include "custom_crc/custom_crc.h"
 #include "main.h"
 #include "tinycrypt/ecc_dsa.h"
 #include "tinycrypt/sha256.h"
@@ -10,19 +28,22 @@
 #include "custom_logger.h"
 #include "flash/operations.h"
 
-extern UART_HandleTypeDef huart1;
+// extern UART_HandleTypeDef huart1;
 
 /* TODO: For later usage. This will be version 1.0, first 4 bits are major
  * version, second 4 are minor version. Will see how can i implement anti
  * rollback for this one */
 #define MIN_VERSION 0x00010000U
 
+/**
+ * @brief ECDSA public key used for firmware signature verification.
+ *
+ * This public key is used to validate firmware signatures generated
+ * using the corresponding private key.
+ *
+ */
 // clang-format off
 static const uint8_t _PUBLIC_KEY[64] = {
-    //   Public key X:
-    //   7224de17d13ee1eee3953d976f7bff317616bb8dc1dc7c8b15f438f8bd26bab0
-    // Public key Y:
-    // 22e43107ec33dfa5c14b8035bf354e823b59729bb6638f0c9f5a6eea640efe78
     /* X */
     0x72, 0x24, 0xde, 0x17, 0xd1, 0x3e, 0xe1, 0xee,
     0xe3, 0x95, 0x3d, 0x97, 0x6f, 0x7b, 0xff, 0x31,
@@ -36,6 +57,28 @@ static const uint8_t _PUBLIC_KEY[64] = {
 };
 // clang-format on
 
+/**
+ * @brief Verify firmware image integrity and authenticity.
+ *
+ * Performs a full validation sequence on the provided firmware image:
+ *
+ * 1. Validate application magic constant
+ * 2. Validate firmware size boundaries
+ * 3. Verify firmware CRC32 checksum
+ * 4. Generate SHA-256 digest of firmware payload
+ * 5. Verify ECDSA signature using embedded public key
+ *
+ * The firmware payload starts immediately after the application header.
+ *
+ * @param app_header Pointer to the firmware application header.
+ *
+ * @retval VERIFY_OK             Firmware is valid and trusted.
+ * @retval VERIFY_BAD_MAGIC      Invalid application magic constant.
+ * @retval VERIFY_BAD_SIZE       Invalid firmware size.
+ * @retval VERIFY_BAD_CRC        CRC32 integrity verification failed.
+ * @retval VERIFY_BAD_SIGNATURE  ECDSA signature verification failed.
+ *
+ */
 enum verify_result_t bl_verify_app(const struct app_header_t *app_header) {
   custom_logger_log("[BOOTy]: bl_veify_app address: %x\r\n", app_header);
   custom_logger_log("[BOOTy]: bl_verify_app: verify magic constant\r\n");

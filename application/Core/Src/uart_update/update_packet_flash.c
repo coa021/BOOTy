@@ -1,3 +1,16 @@
+/**
+ * @file update_packet_flash.c
+ * @brief Flash memory operations for UART firmware update packets.
+ *
+ * This module provides helper functions for:
+ * - Erasing update storage sectors
+ * - Writing firmware chunks into flash memory
+ * - Validating final firmware image CRC32 integrity
+ *
+ * Firmware updates are stored inside dedicated update flash sectors
+ * before being verified and applied by the bootloader.
+ */
+
 #include "uart_update/update_packet_flash.h"
 
 #include <string.h>
@@ -6,23 +19,42 @@
 #include "custom_logger.h"
 #include "flash/operations.h"
 
-#include "custom_crc/custom_crc32.h"
+#include "custom_crc/custom_crc.h"
 
+/**
+ * @brief Number of sectors to erase for small firmware images.
+ */
 #define UPDATE_PACKET_FLASH_ERASE_1_SECTOR 1
+
+/**
+ * @brief Number of sectors to erase for large firmware images.
+ */
 #define UPDATE_PACKET_FLASH_ERASE_2_SECTOR 2
 
-/* 128KB */
+/**
+ * @brief Size of a single update storage flash sector in bytes.
+ *
+ * Sectors 6 and 7 are both 128 KB.
+ */
 #define UPDATE_PACKET_FLASH_SINGLE_SECTOR_SIZE (128 * 1024)
 
 /**
- * @brief Erase update sectors
+ * @brief Erase firmware update storage sectors.
  *
- * Erase update sector storage based on firmware size. Sector 6 and 7 are both
- * 128KB, if firmware size is bigger than 128KB it will delete 2 sectors,
- * otherwise 1
+ * Determines how many sectors must be erased depending on the incoming
+ * firmware size.
  *
- * @param fw_size Size of new firmware
- * @return true/false to signal if we erased sector(s) successfully
+ * Erase strategy:
+ * - Firmware <= 128 KB:
+ *   - Erase 1 sector
+ * - Firmware > 128 KB:
+ *   - Erase 2 sectors
+ *
+ * @param fw_size Size of the incoming firmware image in bytes.
+ *
+ * @retval true  Flash sectors erased successfully.
+ * @retval false Flash erase operation failed.
+ *
  */
 bool update_packet_flash_erase_update(const uint32_t fw_size) {
   //
@@ -41,14 +73,22 @@ bool update_packet_flash_erase_update(const uint32_t fw_size) {
 }
 
 /**
- * @brief Write chunk to FLASH
+ * @brief Write a received firmware chunk into flash memory.
  *
- * Function to write chunk into the specified destination address/update sector
+ * Writes a firmware packet payload into the update storage flash region.
  *
- * @param dest_addr Address for where to write the received chunk
- * @param payload Pointer to payload
- * @param payload_size size of payload
- * @return true/false to signal if we wrote chunk successfully or not
+ * The function:
+ * - Writes aligned 32-bit words directly
+ * - Handles remaining unaligned bytes separately
+ * - Pads partial words with `0xFF`
+ *
+ * @param dest_addr Destination flash address.
+ * @param payload Pointer to received firmware payload.
+ * @param payload_size Payload size in bytes.
+ *
+ * @retval true  Flash write completed successfully.
+ * @retval false Flash write operation failed.
+ *
  */
 bool update_packet_flash_write_chunk(uint32_t dest_addr, const uint8_t *payload,
                                      uint16_t payload_size) {
@@ -82,16 +122,27 @@ bool update_packet_flash_write_chunk(uint32_t dest_addr, const uint8_t *payload,
 }
 
 /**
- * @brief Validate image crc32 on end of firmware TX
+ * @brief Validate CRC32 integrity of the fully received firmware image.
  *
- * Even more firmware verification. Verifies whole crc32 of the received image
- * once its written into update sector to show if the rx was done properly and
- * to check image integrity
+ * Performs a final CRC32 verification after the entire firmware image
+ * has been written into the update flash storage region.
  *
- * @param start_addr Starting address of the new firmware (!IMPORTANT: where the
- * header starts)
- * @param fw_size Firmware size grabbed from the received header
- * @return true/false if actual and expected crc32 are matching
+ * The CRC is calculated over the firmware payload excluding the
+ * application header.
+ *
+ * The computed CRC32 is compared against the CRC value stored
+ * inside the firmware header.
+ *
+ * @param start_addr Starting address of the firmware image.
+ *                   This address must point to the application header.
+ * @param fw_size Total firmware image size in bytes including header.
+ *
+ * @retval true  Firmware image CRC32 matches expected value.
+ * @retval false CRC32 mismatch detected.
+ *
+ * @warning This function validates integrity only.
+ *          Cryptographic authenticity is verified separately using
+ *          signature verification.
  */
 bool update_packet_flash_validate_image_crc32(uint32_t start_addr,
                                               uint32_t fw_size) {

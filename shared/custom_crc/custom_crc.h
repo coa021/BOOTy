@@ -1,5 +1,9 @@
-#ifndef INC_CRC32_H_
-#define INC_CRC32_H_
+/** @file      custom_crc.h
+ * @brief      Header for the commonly shared crc32 and crc16 functions
+ */
+
+#ifndef SHARED_CUSTOM_CRC_H_
+#define SHARED_CUSTOM_CRC_H_
 
 #include <stdint.h>
 #include <stddef.h>

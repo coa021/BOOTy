@@ -20,9 +20,9 @@ enum verify_result_t {
 // enum verify_result_t bl_verify_update(void);
 enum verify_result_t bl_verify_app(const struct app_header_t *app_header);
 
-bool bl_check_for_update(void);
+// bool bl_check_for_update(void);
 
-bool bl_apply_update(void);
+// bool bl_apply_update(void);
 // enum verify_result_t bl_update_fw(void) int32_t
 //     bl_remove_sectors(uint32_t sector, uint32_t num_sectors);
 #endif

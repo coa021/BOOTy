@@ -8,6 +8,8 @@
 bool bl_check_for_update(void);
 bool bl_apply_update(void);
 
+bool bl_check_for_update(void);
+
 bool bl_clear_update_sector(void);
 /* bool bl_swap_partitions(void); */
 

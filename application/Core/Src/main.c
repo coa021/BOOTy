@@ -77,11 +77,6 @@ static void MX_TIM4_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
-// struct ring_buffer_t rx_ring;
-// struct otw_uart_receiver_t receiver;
-// struct otw_packet_parser_t parser;
-// struct otw_update_t update;
-
  static uint32_t last_press = 0;
  uint32_t last_blink = 0;
 
@@ -130,11 +125,6 @@ int main(void) {
   update_packet_parser_init(&packet_parser, &huart2, &htim4,
                             update_packet_parser_tx_cb);
 
-  // rb_init(&rx_ring);
-  // otw_uart_receiver_init(&receiver, &rx_ring, &huart1);
-  // otw_packet_parser_init(&parser, &rx_ring, &htim1);
-  // otw_update_init(&update, &huart1);
-
   custom_logger_log("\nHello from application v2\n");
 
   /* USER CODE END 2 */
@@ -150,55 +140,7 @@ int main(void) {
 
     if (update_packet_parser_parse_and_process(&packet_parser)) {
       // custom_logger_log("Received a chunk\r\n");
-      /* i can store it into flash */
-      /* but i already stored it, will have to separate that if i go that route
-       */
     }
-
-    // custom_logger_log("My rx buffer: %d", (uint8_t)packet_parser.rx_byte);
-
-    // if (flag_check_crc16) {
-
-    //   // check crc
-    //   uint16_t calculated_crc16 = crc16(my_buffer, buffer_idx);
-    //   uint16_t expected_crc16 =
-    //       my_buffer[buffer_idx - 2] | (my_buffer[buffer_idx - 1] << 8);
-
-    //   if (calculated_crc16 != expected_crc16) {
-    //     custom_logger_log("Missmatch in crc16; expected: %d,\tactual:
-    //     %d\r\n",
-    //                       expected_crc16, calculated_crc16);
-    //     HAL_UART_Transmit_IT(&huart1, &_NACK, 1);
-    //   }
-
-    //   custom_logger_log("Crc16 is matching\r\n");
-    //   HAL_UART_Transmit_IT(&huart1, &_ACK, 1);
-    //   flag_check_crc16 = false;
-    // }
-    // result = otw_packet_parser_update(&parser);
-
-    // switch (result) {
-    // case OTW_PARSE_RESULT_COMPLETE: {
-    //   const struct otw_uart_packet_t *packet =
-    //       otw_packet_parser_get_packet(&parser);
-    //   bool done = otw_update_handle_packet(&update, packet);
-    //   otw_packet_parser_reset(&parser);
-
-    //   if (done) {
-    //     custom_logger_log("Successfully transferred new firmware\r\n");
-    //     HAL_Delay(1000);
-    //     HAL_NVIC_SystemReset();
-    //   }
-    //   break;
-    // }
-    // case OTW_PARSE_RESULT_ERROR: {
-    //   otw_update_handle_error(&update);
-    //   otw_packet_parser_reset(&parser);
-    //   break;
-    // }
-    // default:
-    //   break;
-    // }
 
     if (HAL_GetTick() - last_blink >= 100) {
       last_blink = HAL_GetTick();
@@ -419,15 +361,10 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 }
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
-  // otw_uart_receiver_rx_cplt_callback(huart);
   update_packet_parser_uart_callback(&packet_parser, huart);
 }
 
-void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size) {
-  // if (huart->Instance == USART1) {
-  // otw_update_flush();
-  // }
-}
+void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size) {}
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
   // otw_packet_parser_timeout_callback(&parser, htim);
@@ -438,16 +375,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 void update_packet_parser_tx_cb(const uint8_t *flag) {
   HAL_UART_Transmit_IT(packet_parser.huart, flag, 1);
 }
-
-// void update_packet_parser_cb_ack(void) {
-//   static uint8_t _ack = UPDATE_PACKET_ACK;
-//   HAL_UART_Transmit_IT(packet_parser.huart, &_ack, 1);
-// }
-
-// void update_packet_parser_cb_nack(void) {
-//   static uint8_t _nack = UPDATE_PACKET_NACK;
-//   HAL_UART_Transmit_IT(packet_parser.huart, &_nack, 1);
-// }
 
 /* USER CODE END 4 */
 

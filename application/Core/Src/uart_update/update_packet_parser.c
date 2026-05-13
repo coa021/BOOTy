@@ -1,7 +1,31 @@
+/**
+ * @file update_packet_parser.c
+ * @brief UART firmware update packet parser implementation.
+ *
+ * This module implements the UART firmware update packet receiver and parser.
+ *
+ * Responsibilities include:
+ * - Receiving UART update packets
+ * - Detecting packet boundaries using timer timeouts
+ * - Validating packet ordering
+ * - Validating packet CRC16 integrity
+ * - Validating firmware application headers
+ * - Writing firmware chunks into flash memory
+ * - Sending ACK/NACK responses
+ * - Detecting transfer completion
+ * - Triggering final firmware CRC32 validation
+ * - Restarting the system after successful firmware upload
+ *
+ * The parser operates using:
+ * - UART interrupt callbacks for byte reception
+ * - Timer interrupt callbacks for packet timeout detection
+ * - Main loop processing for packet validation and flash writes
+ */
+
 #include "uart_update/update_packet_parser.h"
 
 #include "app_header.h"
-#include "custom_crc/custom_crc32.h"
+#include "custom_crc/custom_crc.h"
 #include "custom_logger.h"
 #include "flash/operations.h"
 #include "flash_layout.h"
@@ -10,18 +34,22 @@
 #include "uart_update/update_packet_flash.h"
 #include "uart_update/update_packet_validator.h"
 
+/**
+ * @brief ACK response byte sent after successful packet processing.
+ */
 static const uint8_t _ACK = UPDATE_PACKET_ACK;
+
+/**
+ * @brief NACK response byte sent after failed packet validation.
+ */
 static const uint8_t _NACK = UPDATE_PACKET_NACK;
 
 /**
- * @brief Reset packet parser state for the next package.
+ * @brief Reset parser state for a new firmware transfer.
  *
- * This is used when, for example crc32 fails and we want to retransmit new
- * package, so we have to reset state of packet parser
+ * Clears parser runtime state and receive buffer contents.
  *
- *
- * @param parser parser of type struct update_packet_parser_t.
- * @return Nothing
+ * @param parser Pointer to update packet parser instance.
  */
 static void update_packet_parser_reset(struct update_packet_parser_t *parser) {
   parser->rx_done = false;
@@ -32,17 +60,22 @@ static void update_packet_parser_reset(struct update_packet_parser_t *parser) {
 }
 
 /**
- * @brief Initialize packet parser.
+ * @brief Initialize firmware update packet parser.
  *
- * For the tx_cb, you have to pass a callback that will be executed for ACK and
- * NACK of packets. In my case i used UART IT
+ * Initializes parser runtime state and configures:
+ * - UART handle
+ * - Timer handle
+ * - ACK/NACK transmit callback
+ * - Receive buffer state
  *
- * @param parser Pointer to parser.
- * @param huart Pointer to huart.
- * @param tim Pointer to timer.
- * @param (*tx_cb) Pointer to function that receives const uint8_t*.
- * @param[in,out] buffer Description of a buffer used for both input and output.
- * @return Description of the return value (e.g., 0 for success, -1 for error).
+ * UART reception is started immediately using interrupt mode.
+ *
+ * @param parser Pointer to parser instance.
+ * @param huart Pointer to UART handle.
+ * @param tim Pointer to timer handle.
+ * @param tx_cb Callback used to transmit ACK/NACK responses.
+ *
+ * @note UART reception uses single-byte interrupt mode.
  */
 void update_packet_parser_init(struct update_packet_parser_t *parser,
                                UART_HandleTypeDef *huart,
@@ -76,19 +109,22 @@ static void reset_buffer(struct update_packet_parser_t *parser) {
 }
 
 /**
- * @brief Helper function. Check if we received last packet
+ * @brief Check whether the firmware transfer is complete.
  *
- * If we wrote in flash exactly the same size as firmware size, we can validate
- * crc32. On success it restarts the system. On fail it resets parser completely
- * so that we can receive new image
+ * When the transfer completion flag is received:
+ * - Validate the final firmware image CRC32
+ * - Reset parser state on failure
+ * - Restart the MCU on success
  *
- * @param parser Pointer to parser.
- * @return Nothing
+ * @param parser Pointer to parser instance.
+ *
+ * @note Final firmware validation is performed only after all packets
+ *       are successfully written into flash.
  */
 static void packet_parser_check_rx_end(struct update_packet_parser_t *parser) {
   // if (parser->write_idx == parser->fw_size)
   if (parser->tx_end) {
-    custom_logger_log("fw size: {}\r\n", parser->fw_size);
+    custom_logger_log("\nfw size: {%d}\r\n", parser->fw_size);
     /* i received everything so i can rearm erase flag to delete sector.
      * technically unneeded but ok */
     // parser->first_packet = true;
@@ -108,20 +144,25 @@ static void packet_parser_check_rx_end(struct update_packet_parser_t *parser) {
 }
 
 /**
- * @brief Parse and process received chunk of bytes
+ * @brief Parse and process a fully received firmware packet.
  *
- * When TIM callback stops the timer, rx done flag is set and this function is
- * executed. In here we are validating the size of chunk, chunk's crc16. If that
- * is ok and this is the first packet it can erase the update storage sectors
- * and it checks validity of the app header. If any of this fails, it returns
- * NACK. If everything is ok it stores the received chunk on FLASH.
- * If everything is ok, it sends back ACK and resets buffer. After that it
- * checks if we are at the end of the packet RX. If we are it validates crc32
- * and reboots system upon successful validation
+ * Processing stages:
+ * 1. Validate packet ordering
+ * 2. Validate packet size
+ * 3. Validate packet CRC16
+ * 4. Validate firmware application header (first packet only)
+ * 5. Erase update flash sectors (first packet only)
+ * 6. Write firmware payload into flash
+ * 7. Send ACK or NACK response
+ * 8. Detect end of firmware transfer
  *
+ * @param parser Pointer to parser instance.
  *
- * @param parser Pointer to parser.
- * @return true/false depending on if all checks passed or not
+ * @retval true  Packet processed successfully.
+ * @retval false Packet validation or flash operation failed.
+ *
+ * @note This function is intended to run from the main loop after
+ *       packet reception is completed.
  */
 bool update_packet_parser_parse_and_process(
     struct update_packet_parser_t *parser) {
@@ -137,13 +178,13 @@ bool update_packet_parser_parse_and_process(
   /* grab last packet end flag */
   memcpy(&parser->tx_end, parser->buffer + sizeof(parser->current_counter),
          sizeof(uint8_t));
-  custom_logger_log("Counter is: {%d}. End flag is: {%d}\r\n",
+  custom_logger_log("Counter is: {%d}. End flag is: {%d}\r",
                     parser->current_counter, parser->tx_end);
 
   if ((parser->previous_counter + 1) != parser->current_counter) {
-    custom_logger_log(
-        "Chunk order missmatch! Previous counter: {%d}. Current counter: {%d}",
-        parser->previous_counter, parser->current_counter);
+    custom_logger_log("Chunk order missmatch! Previous counter: {%d}. Current "
+                      "counter: {%d}\r\n",
+                      parser->previous_counter, parser->current_counter);
 
     /* chunk order missmatch i want to nack that or should i simply
      * terminate/timeout the communication? */
@@ -224,16 +265,21 @@ bool update_packet_parser_parse_and_process(
 }
 
 /**
- * @brief UART Callback.
+ * @brief UART receive interrupt callback.
  *
- * UART Interrupt. When we receive a byte on specified huart, it stops the
- * timer, fills the buffer with the received byte, and starts the timer. Like
- * this, timeout of timer is never triggered and we can keep on receiving bytes
- * untill we either have full chunk received or we receive remainder or whatever
+ * Handles byte-by-byte UART reception.
  *
- * @param parser Pointer to parser
- * @param huart Pointer to huart
- * @return Nothing
+ * Operation:
+ * - Stops timeout timer
+ * - Stores received byte into parser buffer
+ * - Rearms UART reception interrupt
+ * - Restarts timeout timer
+ *
+ * This mechanism allows packets to be delimited using
+ * inactivity timeout detection.
+ *
+ * @param parser Pointer to parser instance.
+ * @param huart Pointer to UART handle.
  */
 void update_packet_parser_uart_callback(struct update_packet_parser_t *parser,
                                         UART_HandleTypeDef *huart) {
@@ -250,16 +296,20 @@ void update_packet_parser_uart_callback(struct update_packet_parser_t *parser,
 }
 
 /**
- * @brief TIM Callback
+ * @brief Timer timeout interrupt callback.
  *
- * When timer expires (50ms timeout), interrupt is triggered. Stops the timer
- * and check if the buffer has minimal viable packet (at least 1 byte bigger
- * than packet overhead size). Marks the rx_done so that the packet can get
- * processed by the function in main loop (parse and process)
+ * Triggered when no UART bytes are received within the configured
+ * timeout period.
  *
- * @param *parser Parser of type struct update_packet_parser_t.
- * @param *htim Pointer to timer in TIM IT.
- * @return Nothing
+ * This marks the end of a received packet.
+ *
+ * Behavior:
+ * - Stops timeout timer
+ * - Marks packet reception complete if packet size is valid
+ * - Sends NACK for packets smaller than minimum overhead size
+ *
+ * @param parser Pointer to parser instance.
+ * @param htim Pointer to timer handle.
  */
 void update_packet_parser_tim_callback(struct update_packet_parser_t *parser,
                                        TIM_HandleTypeDef *htim) {

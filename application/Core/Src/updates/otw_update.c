@@ -3,7 +3,7 @@
 
 #include <string.h>
 
-#include "custom_crc/custom_crc32.h"
+#include "custom_crc/custom_crc.h"
 #include "flash/operations.h"
 #include "flash_layout.h"
 

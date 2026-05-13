@@ -1,6 +1,6 @@
 #include "uart_update/update_packet_validator.h"
 
-#include "custom_crc/custom_crc32.h"
+#include "custom_crc/custom_crc.h"
 #include "custom_logger.h"
 #include "uart_update/update_packet_parser.h"
 

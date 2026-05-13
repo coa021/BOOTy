@@ -1,3 +1,7 @@
+/** @file      app_header.h
+ * @brief      Header for application header shared between both projects
+ */
+
 #ifndef _SHARED_APP_HEADER_H
 #define _SHARED_APP_HEADER_H
 
@@ -13,7 +17,6 @@ struct app_header_t {
   uint32_t version;
   uint32_t size;
   uint32_t crc;
-  // uint8_t sha256[32];
   uint8_t signature[64];
 };
 
@@ -25,4 +28,4 @@ static inline const struct app_header_t *get_update_header(void) {
   return (const struct app_header_t *)UPDATE_STORAGE_START_ADDR;
 }
 
-#endif 
+#endif
