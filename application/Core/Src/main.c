@@ -135,7 +135,7 @@ int main(void) {
   // otw_packet_parser_init(&parser, &rx_ring, &htim1);
   // otw_update_init(&update, &huart1);
 
-  custom_logger_log("\nHello from application v1\n");
+  custom_logger_log("\nHello from application v2\n");
 
   /* USER CODE END 2 */
 
@@ -200,7 +200,7 @@ int main(void) {
     //   break;
     // }
 
-    if (HAL_GetTick() - last_blink >= 150) {
+    if (HAL_GetTick() - last_blink >= 100) {
       last_blink = HAL_GetTick();
 
       HAL_GPIO_TogglePin(LED_INDICATOR_GPIO_Port, LED_INDICATOR_Pin);

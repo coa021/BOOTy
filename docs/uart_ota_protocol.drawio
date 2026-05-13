@@ -1,0 +1,317 @@
+<mxfile host="65bd71144e">
+    <diagram id="5v3PRpagY9-FQ2TkuMhJ" name="Page-1">
+        <mxGraphModel dx="2892" dy="907" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="title" value="OTA UART Protocol — STM32F411 Black Pill" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=22;fontStyle=1;fontColor=#1a1a2e;" parent="1" vertex="1">
+                    <mxGeometry x="20" y="10" width="820" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="subtitle" value="Stop-and-Wait ARQ · CRC16 (0x8005 poly) · P-256 ECDSA Signed Binary" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;fontColor=#555555;" parent="1" vertex="1">
+                    <mxGeometry x="20" y="48" width="820" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="sec1_title" value="① Packet Structure (263 bytes per packet)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;fontStyle=1;fontColor=#1a1a2e;" parent="1" vertex="1">
+                    <mxGeometry x="20" y="80" width="420" height="24" as="geometry"/>
+                </mxCell>
+                <mxCell id="pkt_counter" value="&lt;b&gt;package_counter&lt;/b&gt;&lt;br&gt;uint32_t · 4 bytes&lt;br&gt;Little-Endian&lt;br&gt;&lt;font color=&#39;#888&#39;&gt;starts at 1, +1 per ACK&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+                    <mxGeometry x="20" y="110" width="130" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="pkt_flag" value="&lt;b&gt;flag&lt;/b&gt;&lt;br&gt;uint8_t · 1 byte&lt;br&gt;0x00 = normal&lt;br&gt;0x01 = last chunk" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+                    <mxGeometry x="150" y="110" width="110" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="pkt_data" value="&lt;b&gt;firmware chunk&lt;/b&gt;&lt;br&gt;uint8_t[256] · 256 bytes&lt;br&gt;&lt;font color=&#39;#888&#39;&gt;raw binary slice&lt;br&gt;of application_signed.bin&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+                    <mxGeometry x="260" y="110" width="160" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="pkt_crc" value="&lt;b&gt;CRC16&lt;/b&gt;&lt;br&gt;uint16_t · 2 bytes&lt;br&gt;Little-Endian&lt;br&gt;&lt;font color=&#39;#888&#39;&gt;covers chunk only&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;verticalAlign=middle;" parent="1" vertex="1">
+                    <mxGeometry x="420" y="110" width="110" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="off0" value="offset 0" style="text;html=1;strokeColor=none;fillColor=none;align=center;fontSize=9;fontColor=#888;" parent="1" vertex="1">
+                    <mxGeometry x="20" y="182" width="130" height="16" as="geometry"/>
+                </mxCell>
+                <mxCell id="off4" value="offset 4" style="text;html=1;strokeColor=none;fillColor=none;align=center;fontSize=9;fontColor=#888;" parent="1" vertex="1">
+                    <mxGeometry x="150" y="182" width="110" height="16" as="geometry"/>
+                </mxCell>
+                <mxCell id="off5" value="offset 5" style="text;html=1;strokeColor=none;fillColor=none;align=center;fontSize=9;fontColor=#888;" parent="1" vertex="1">
+                    <mxGeometry x="260" y="182" width="160" height="16" as="geometry"/>
+                </mxCell>
+                <mxCell id="off261" value="offset 261" style="text;html=1;strokeColor=none;fillColor=none;align=center;fontSize=9;fontColor=#888;" parent="1" vertex="1">
+                    <mxGeometry x="420" y="182" width="110" height="16" as="geometry"/>
+                </mxCell>
+                <mxCell id="total_brace" value="" style="endArrow=none;startArrow=none;html=1;exitX=0;exitY=1;exitDx=0;exitDy=0;entryX=1;entryY=1;entryDx=0;entryDy=0;strokeColor=#333;" parent="1" edge="1">
+                    <mxGeometry x="20" y="200" width="510" height="10" relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="20" y="205"/>
+                            <mxPoint x="530" y="205"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="total_label" value="Total = 4 + 1 + 256 + 2 = 263 bytes / packet" style="text;html=1;strokeColor=none;fillColor=none;align=center;fontSize=11;fontStyle=1;fontColor=#1a1a2e;" parent="1" vertex="1">
+                    <mxGeometry x="140" y="208" width="310" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="crc_note" value="CRC16 algorithm: poly=0x8005, init=0xFFFF, refIn=true, refOut=true, xorOut=0x0000  (standard CRC-16/IBM)" style="text;html=1;strokeColor=#b85450;fillColor=#fde8e8;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontSize=10;" parent="1" vertex="1">
+                    <mxGeometry x="20" y="232" width="510" height="24" as="geometry"/>
+                </mxCell>
+                <mxCell id="sec2_title" value="② Stop-and-Wait Handshake Flow" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;fontStyle=1;fontColor=#1a1a2e;" parent="1" vertex="1">
+                    <mxGeometry x="20" y="268" width="420" height="24" as="geometry"/>
+                </mxCell>
+                <mxCell id="host_label" value="HOST (Python)" style="text;html=1;strokeColor=none;fillColor=#dae8fc;align=center;verticalAlign=middle;fontSize=12;fontStyle=1;rounded=1;strokeColor=#6c8ebf;" parent="1" vertex="1">
+                    <mxGeometry x="20" y="298" width="160" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="mcu_label" value="MCU (STM32F411)" style="text;html=1;strokeColor=none;fillColor=#d5e8d4;align=center;verticalAlign=middle;fontSize=12;fontStyle=1;rounded=1;strokeColor=#82b366;" parent="1" vertex="1">
+                    <mxGeometry x="380" y="298" width="160" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="host_line" value="" style="endArrow=none;dashed=1;html=1;strokeColor=#6c8ebf;strokeWidth=2;" parent="1" edge="1">
+                    <mxGeometry x="100" y="328" width="1" height="440" relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="100" y="328"/>
+                            <mxPoint x="100" y="760"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="mcu_line" value="" style="endArrow=none;dashed=1;html=1;strokeColor=#82b366;strokeWidth=2;" parent="1" edge="1">
+                    <mxGeometry x="460" y="328" width="1" height="440" relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="460" y="328"/>
+                            <mxPoint x="460" y="760"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="s1" value="open application_signed.bin&lt;br&gt;compute firmware_size" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;" parent="1" vertex="1">
+                    <mxGeometry x="20" y="335" width="160" height="36" as="geometry"/>
+                </mxCell>
+                <mxCell id="s2" value="build packet N:&lt;br&gt;header + chunk[256] + CRC16(chunk)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;" parent="1" vertex="1">
+                    <mxGeometry x="20" y="400" width="160" height="36" as="geometry"/>
+                </mxCell>
+                <mxCell id="arr_send" value="ser.write(263 bytes)" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeColor=#1a1a2e;strokeWidth=2;fontSize=10;fontStyle=1;" parent="1" source="s2" target="mcu_rx" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="mcu_rx" value="UART RX interrupt&lt;br&gt;buffer 263 bytes" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=10;" parent="1" vertex="1">
+                    <mxGeometry x="380" y="400" width="160" height="36" as="geometry"/>
+                </mxCell>
+                <mxCell id="mcu_crc" value="validate payload&lt;br&gt;write chunk to flash" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;" parent="1" vertex="1">
+                    <mxGeometry x="380" y="455" width="160" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="arr_crc" value="" style="edgeStyle=orthogonalEdgeStyle;html=1;" parent="1" source="mcu_rx" target="mcu_crc" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="mcu_ack" value="send ACK (0x01)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=10;" parent="1" vertex="1">
+                    <mxGeometry x="380" y="535" width="160" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="arr_ack_down" value="CRC OK" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#82b366;fontSize=9;" parent="1" source="mcu_crc" target="mcu_ack" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="mcu_nack" value="send NACK (0x15)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10;" parent="1" vertex="1">
+                    <mxGeometry x="470" y="585" width="130" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="arr_nack_side" value="VALIDATION FAIL" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#b85450;fontSize=9;" parent="1" source="mcu_crc" target="mcu_nack" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="540" y="485"/>
+                            <mxPoint x="560" y="485"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="host_ack_rx" value="ser.read(1)&lt;br&gt;byte == 0x01 → ACK" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;" parent="1" vertex="1">
+                    <mxGeometry x="20" y="535" width="160" height="36" as="geometry"/>
+                </mxCell>
+                <mxCell id="arr_ack_back" value="1 byte ACK" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;strokeColor=#82b366;strokeWidth=2;fontSize=10;fontStyle=1;" parent="1" source="mcu_ack" target="host_ack_rx" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="host_advance" value="sent += 256&lt;br&gt;package_counter += 1&lt;br&gt;next iteration" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;" parent="1" vertex="1">
+                    <mxGeometry x="20" y="595" width="160" height="46" as="geometry"/>
+                </mxCell>
+                <mxCell id="arr_advance" value="" style="edgeStyle=orthogonalEdgeStyle;html=1;" parent="1" source="host_ack_rx" target="host_advance" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="arr_loop" value="loop until sent ≥ firmware_size" style="edgeStyle=orthogonalEdgeStyle;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeColor=#6c8ebf;dashed=1;fontSize=9;" parent="1" source="host_advance" target="s2" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="-10" y="618"/>
+                            <mxPoint x="-10" y="418"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="last_flag_note" value="When (sent + 256 ≥ firmware_size):&lt;br&gt;flag = 0x01  (LAST_PACKAGE_FLAG)&lt;br&gt;MCU knows transfer is complete" style="text;html=1;strokeColor=#d6b656;fillColor=#fff2cc;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontSize=10;" parent="1" vertex="1">
+                    <mxGeometry x="200" y="650" width="250" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="timeout_note" value="ser.read(1) → empty (timeout=4s)&lt;br&gt;→ print &#39;Timeout&#39; and break" style="text;html=1;strokeColor=#b85450;fillColor=#fde8e8;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontSize=10;" parent="1" vertex="1">
+                    <mxGeometry x="20" y="660" width="170" height="44" as="geometry"/>
+                </mxCell>
+                <mxCell id="sec3_title" value="③ Example Packet Byte Layout — Packet #1 (first 256 bytes of firmware)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;fontStyle=1;fontColor=#1a1a2e;" parent="1" vertex="1">
+                    <mxGeometry x="620" y="80" width="620" height="24" as="geometry"/>
+                </mxCell>
+                <mxCell id="ex_b0" value="01" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="620" y="110" width="36" height="36" as="geometry"/>
+                </mxCell>
+                <mxCell id="ex_b1" value="00" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" parent="1" vertex="1">
+                    <mxGeometry x="656" y="110" width="36" height="36" as="geometry"/>
+                </mxCell>
+                <mxCell id="ex_b2" value="00" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" parent="1" vertex="1">
+                    <mxGeometry x="692" y="110" width="36" height="36" as="geometry"/>
+                </mxCell>
+                <mxCell id="ex_b3" value="00" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" parent="1" vertex="1">
+                    <mxGeometry x="728" y="110" width="36" height="36" as="geometry"/>
+                </mxCell>
+                <mxCell id="ex_flag" value="00" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="764" y="110" width="36" height="36" as="geometry"/>
+                </mxCell>
+                <mxCell id="ex_data_dots" value="D0 D1 D2 … D255  (256 bytes of firmware data)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" parent="1" vertex="1">
+                    <mxGeometry x="800" y="110" width="330" height="36" as="geometry"/>
+                </mxCell>
+                <mxCell id="ex_crc_lo" value="CL" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;" parent="1" vertex="1">
+                    <mxGeometry x="1130" y="110" width="36" height="36" as="geometry"/>
+                </mxCell>
+                <mxCell id="ex_crc_hi" value="CH" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;" parent="1" vertex="1">
+                    <mxGeometry x="1166" y="110" width="36" height="36" as="geometry"/>
+                </mxCell>
+                <mxCell id="lbl_counter32" value="counter = 0x00000001 (LE)" style="text;html=1;strokeColor=none;fillColor=none;align=center;fontSize=9;fontColor=#6c8ebf;" parent="1" vertex="1">
+                    <mxGeometry x="620" y="148" width="178" height="16" as="geometry"/>
+                </mxCell>
+                <mxCell id="lbl_flag8" value="flag=0x00" style="text;html=1;strokeColor=none;fillColor=none;align=center;fontSize=9;fontColor=#b8860b;" parent="1" vertex="1">
+                    <mxGeometry x="764" y="148" width="36" height="16" as="geometry"/>
+                </mxCell>
+                <mxCell id="lbl_data256" value="256 bytes firmware payload" style="text;html=1;strokeColor=none;fillColor=none;align=center;fontSize=9;fontColor=#4a7c4e;" parent="1" vertex="1">
+                    <mxGeometry x="800" y="148" width="330" height="16" as="geometry"/>
+                </mxCell>
+                <mxCell id="lbl_crc16" value="CRC16 LE" style="text;html=1;strokeColor=none;fillColor=none;align=center;fontSize=9;fontColor=#b85450;" parent="1" vertex="1">
+                    <mxGeometry x="1130" y="148" width="72" height="16" as="geometry"/>
+                </mxCell>
+                <mxCell id="sec3b_title" value="Example Packet — Last Packet (flag = 0x01)" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=12;fontStyle=1;fontColor=#1a1a2e;" parent="1" vertex="1">
+                    <mxGeometry x="620" y="175" width="440" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="ex2_counter" value="NN NN NN NN" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;" parent="1" vertex="1">
+                    <mxGeometry x="620" y="200" width="110" height="36" as="geometry"/>
+                </mxCell>
+                <mxCell id="ex2_flag" value="01" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ff8c00;strokeColor=#d6b656;fontSize=14;fontStyle=1;fontColor=#fff;" parent="1" vertex="1">
+                    <mxGeometry x="730" y="200" width="36" height="36" as="geometry"/>
+                </mxCell>
+                <mxCell id="ex2_data" value="last chunk (≤256 bytes, zero-padded if needed)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=10;" parent="1" vertex="1">
+                    <mxGeometry x="766" y="200" width="270" height="36" as="geometry"/>
+                </mxCell>
+                <mxCell id="ex2_crc" value="CL CH" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10;" parent="1" vertex="1">
+                    <mxGeometry x="1036" y="200" width="60" height="36" as="geometry"/>
+                </mxCell>
+                <mxCell id="lbl_last" value="LAST_PACKAGE_FLAG = 0x01 → MCU triggers post-flash verification" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=10;fontColor=#c04000;" parent="1" vertex="1">
+                    <mxGeometry x="730" y="238" width="400" height="16" as="geometry"/>
+                </mxCell>
+                <mxCell id="sec4_title" value="④ Application Header (512-byte aligned, prepended to binary)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;fontStyle=1;fontColor=#1a1a2e;" parent="1" vertex="1">
+                    <mxGeometry x="620" y="270" width="620" height="24" as="geometry"/>
+                </mxCell>
+                <mxCell id="h_magic" value="&lt;b&gt;magic&lt;/b&gt;&lt;br&gt;uint32_t · 4B&lt;br&gt;offset 0" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=10;" parent="1" vertex="1">
+                    <mxGeometry x="620" y="300" width="90" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="h_version" value="&lt;b&gt;version&lt;/b&gt;&lt;br&gt;uint32_t · 4B&lt;br&gt;offset 4" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=10;" parent="1" vertex="1">
+                    <mxGeometry x="710" y="300" width="90" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="h_size" value="&lt;b&gt;size&lt;/b&gt;&lt;br&gt;uint32_t · 4B&lt;br&gt;offset 8&lt;br&gt;&lt;font color=&#39;#888&#39;&gt;fw body len&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=10;" parent="1" vertex="1">
+                    <mxGeometry x="800" y="300" width="90" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="h_crc" value="&lt;b&gt;crc&lt;/b&gt;&lt;br&gt;uint32_t · 4B&lt;br&gt;offset 12&lt;br&gt;&lt;font color=&#39;#888&#39;&gt;CRC32 of body&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10;" parent="1" vertex="1">
+                    <mxGeometry x="890" y="300" width="90" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="h_sig" value="&lt;b&gt;signature[64]&lt;/b&gt;&lt;br&gt;uint8_t · 64B&lt;br&gt;offset 16&lt;br&gt;&lt;font color=&#39;#888&#39;&gt;P-256 ECDSA&lt;br&gt;(r||s, DER or raw)&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=10;" parent="1" vertex="1">
+                    <mxGeometry x="980" y="300" width="110" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="h_pad" value="&lt;b&gt;padding&lt;/b&gt;&lt;br&gt;512 − 80 = 432B&lt;br&gt;(0xFF or 0x00)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;fontSize=10;" parent="1" vertex="1">
+                    <mxGeometry x="1090" y="300" width="120" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="hdr_total" value="80 bytes struct  +  432 bytes padding  =  512 bytes total (flash sector aligned)" style="text;html=1;strokeColor=#9673a6;fillColor=#f3e8ff;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=1;fontSize=11;fontStyle=1;" parent="1" vertex="1">
+                    <mxGeometry x="620" y="366" width="590" height="24" as="geometry"/>
+                </mxCell>
+                <mxCell id="sec5_title" value="⑤ Signing &amp; Verification Pipeline" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;fontStyle=1;fontColor=#1a1a2e;" parent="1" vertex="1">
+                    <mxGeometry x="620" y="402" width="620" height="24" as="geometry"/>
+                </mxCell>
+                <mxCell id="sg1" value="raw firmware.bin&lt;br&gt;&lt;font color=&#39;#888&#39;&gt;compiled output&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666;fontSize=11;" parent="1" vertex="1">
+                    <mxGeometry x="620" y="432" width="130" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="sg_arr1" value="" style="endArrow=open;endSize=8;html=1;strokeWidth=2;" parent="1" source="sg1" target="sg2" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="sg2" value="SHA-256(firmware body)&lt;br&gt;&lt;font color=&#39;#888&#39;&gt;32-byte digest&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" parent="1" vertex="1">
+                    <mxGeometry x="780" y="432" width="140" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="sg_arr2" value="" style="endArrow=open;endSize=8;html=1;strokeWidth=2;" parent="1" source="sg2" target="sg3" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="sg3" value="ECDSA-P256-Sign&lt;br&gt;(private key)&lt;br&gt;&lt;font color=&#39;#888&#39;&gt;→ 64-byte sig&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=11;" parent="1" vertex="1">
+                    <mxGeometry x="950" y="432" width="130" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="sg_arr3" value="" style="endArrow=open;endSize=8;html=1;strokeWidth=2;" parent="1" source="sg3" target="sg4" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="sg4" value="write to header.signature&lt;br&gt;prepend 512B header&lt;br&gt;→ application_signed.bin" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" parent="1" vertex="1">
+                    <mxGeometry x="1110" y="432" width="130" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="bv_title" value="Bootloader-side verification (MCU):" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=11;fontStyle=1;fontColor=#1a1a2e;" parent="1" vertex="1">
+                    <mxGeometry x="620" y="494" width="300" height="18" as="geometry"/>
+                </mxCell>
+                <mxCell id="bv1" value="1. Read header (first 512B of received image)" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=10;" parent="1" vertex="1">
+                    <mxGeometry x="630" y="514" width="360" height="16" as="geometry"/>
+                </mxCell>
+                <mxCell id="bv2" value="2. Check header.magic matches expected constant" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=10;" parent="1" vertex="1">
+                    <mxGeometry x="630" y="530" width="360" height="16" as="geometry"/>
+                </mxCell>
+                <mxCell id="bv3" value="3. Compute SHA-256 over firmware body (bytes 512 .. 512+header.size-1)" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=10;" parent="1" vertex="1">
+                    <mxGeometry x="630" y="546" width="480" height="16" as="geometry"/>
+                </mxCell>
+                <mxCell id="bv4" value="4. ECDSA-P256-Verify(public_key, digest, header.signature) → PASS/FAIL" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=10;" parent="1" vertex="1">
+                    <mxGeometry x="630" y="562" width="480" height="16" as="geometry"/>
+                </mxCell>
+                <mxCell id="bv5" value="5. If PASS: swap partition / jump to new app" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=10;" parent="1" vertex="1">
+                    <mxGeometry x="630" y="578" width="360" height="16" as="geometry"/>
+                </mxCell>
+                <mxCell id="sec6_title" value="⑥ Flash Layout (application_signed.bin)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;fontStyle=1;fontColor=#1a1a2e;" parent="1" vertex="1">
+                    <mxGeometry x="620" y="608" width="620" height="24" as="geometry"/>
+                </mxCell>
+                <mxCell id="fl_hdr" value="App Header (512B)&lt;br&gt;magic · version · size · crc32 · signature[64] · padding" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;" parent="1" vertex="1">
+                    <mxGeometry x="620" y="638" width="590" height="44" as="geometry"/>
+                </mxCell>
+                <mxCell id="fl_fw" value="Firmware Body (header.size bytes)&lt;br&gt;Compiled application binary · SHA-256 and CRC32 computed over this region only" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" parent="1" vertex="1">
+                    <mxGeometry x="620" y="682" width="590" height="44" as="geometry"/>
+                </mxCell>
+                <mxCell id="fl_label0" value="offset 0" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=9;fontColor=#888;" parent="1" vertex="1">
+                    <mxGeometry x="1210" y="624" width="80" height="14" as="geometry"/>
+                </mxCell>
+                <mxCell id="fl_label512" value="offset 512" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=9;fontColor=#888;" parent="1" vertex="1">
+                    <mxGeometry x="1210" y="668" width="80" height="14" as="geometry"/>
+                </mxCell>
+                <mxCell id="fl_labelend" value="offset 512 + size" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=9;fontColor=#888;" parent="1" vertex="1">
+                    <mxGeometry x="1210" y="712" width="110" height="14" as="geometry"/>
+                </mxCell>
+                <mxCell id="legend_title" value="Legend" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=11;fontStyle=1;fontColor=#1a1a2e;" parent="1" vertex="1">
+                    <mxGeometry x="615" y="740" width="100" height="18" as="geometry"/>
+                </mxCell>
+                <mxCell id="leg1" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+                    <mxGeometry x="620" y="770" width="20" height="14" as="geometry"/>
+                </mxCell>
+                <mxCell id="leg1t" value="Header / counter field" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=10;" parent="1" vertex="1">
+                    <mxGeometry x="645" y="770" width="130" height="14" as="geometry"/>
+                </mxCell>
+                <mxCell id="leg2" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+                    <mxGeometry x="780" y="770" width="20" height="14" as="geometry"/>
+                </mxCell>
+                <mxCell id="leg2t" value="Flag / hash" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=10;" parent="1" vertex="1">
+                    <mxGeometry x="805" y="770" width="80" height="14" as="geometry"/>
+                </mxCell>
+                <mxCell id="leg3" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+                    <mxGeometry x="900" y="770" width="20" height="14" as="geometry"/>
+                </mxCell>
+                <mxCell id="leg3t" value="Data / firmware body" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=10;" parent="1" vertex="1">
+                    <mxGeometry x="925" y="770" width="120" height="14" as="geometry"/>
+                </mxCell>
+                <mxCell id="leg4" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" parent="1" vertex="1">
+                    <mxGeometry x="1060" y="770" width="20" height="14" as="geometry"/>
+                </mxCell>
+                <mxCell id="leg4t" value="CRC / error path" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=10;" parent="1" vertex="1">
+                    <mxGeometry x="1085" y="770" width="100" height="14" as="geometry"/>
+                </mxCell>
+                <mxCell id="leg5" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" parent="1" vertex="1">
+                    <mxGeometry x="1195" y="770" width="20" height="14" as="geometry"/>
+                </mxCell>
+                <mxCell id="leg5t" value="Signature / ECDSA" style="text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=10;" parent="1" vertex="1">
+                    <mxGeometry x="1220" y="770" width="110" height="14" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>
