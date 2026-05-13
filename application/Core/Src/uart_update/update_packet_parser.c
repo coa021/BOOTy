@@ -27,7 +27,7 @@ static void update_packet_parser_reset(struct update_packet_parser_t *parser) {
   parser->rx_done = false;
   parser->idx = 0;
   parser->write_idx = 0;
-  parser->first_packet = true;
+  //  parser->first_packet = true;
   memset(parser->buffer, 0, UPDATE_PACKET_BUFFER_SIZE);
 }
 
@@ -53,9 +53,12 @@ void update_packet_parser_init(struct update_packet_parser_t *parser,
   parser->rx_done = false;
   parser->idx = 0;
   parser->write_idx = 0;
-  parser->first_packet = true;
+  //  parser->first_packet = true;
   memset(parser->buffer, 0, UPDATE_PACKET_BUFFER_SIZE);
   parser->tx_cb = tx_cb;
+  /* TODO */
+  parser->previous_counter = parser->current_counter = 0;
+  parser->tx_end = 0;
 
   // TODO: Move into some callback or something
   HAL_UART_Receive_IT(parser->huart, &parser->rx_byte, 1);
@@ -83,10 +86,12 @@ static void reset_buffer(struct update_packet_parser_t *parser) {
  * @return Nothing
  */
 static void packet_parser_check_rx_end(struct update_packet_parser_t *parser) {
-  if (parser->write_idx == parser->fw_size) {
+  // if (parser->write_idx == parser->fw_size)
+  if (parser->tx_end) {
+    custom_logger_log("fw size: {}\r\n", parser->fw_size);
     /* i received everything so i can rearm erase flag to delete sector.
      * technically unneeded but ok */
-    parser->first_packet = true;
+    // parser->first_packet = true;
 
     if (!update_packet_flash_validate_image_crc32(UPDATE_STORAGE_START_ADDR,
                                                   parser->fw_size)) {
@@ -127,6 +132,26 @@ bool update_packet_parser_parse_and_process(
 
   parser->rx_done = false;
 
+  /* grab the current counter, check if its valid */
+  memcpy(&parser->current_counter, parser->buffer, sizeof(uint32_t));
+  /* grab last packet end flag */
+  memcpy(&parser->tx_end, parser->buffer + sizeof(parser->current_counter),
+         sizeof(uint8_t));
+  custom_logger_log("Counter is: {%d}. End flag is: {%d}\r\n",
+                    parser->current_counter, parser->tx_end);
+
+  if ((parser->previous_counter + 1) != parser->current_counter) {
+    custom_logger_log(
+        "Chunk order missmatch! Previous counter: {%d}. Current counter: {%d}",
+        parser->previous_counter, parser->current_counter);
+
+    /* chunk order missmatch i want to nack that or should i simply
+     * terminate/timeout the communication? */
+    reset_buffer(parser);
+    parser->tx_cb(&_NACK);
+    return false;
+  }
+
   uint16_t received_bytes = parser->idx;
 
   /* validate chunk size */
@@ -148,9 +173,11 @@ bool update_packet_parser_parse_and_process(
 
   uint16_t payload_size = received_bytes - UPDATE_PACKET_OVERHEAD_SIZE;
 
+  /* TODO: I need to change whole logic. i have counter now, so if it is the
+   * first package i need to tell it that */
   /* check if first packet so i can check the header */
-  if (parser->first_packet) {
-
+  // if (parser->first_packet) {
+  if (parser->current_counter == UPDATE_PACKET_FIRST_PACKET_INDEX) {
     if (!update_packet_validate_app_header(parser->buffer, &parser->fw_size)) {
       parser->tx_cb(&_NACK);
       reset_buffer(parser);
@@ -168,12 +195,16 @@ bool update_packet_parser_parse_and_process(
     }
 
     /* i can receive the rest of the packets */
-    parser->first_packet = false;
+    // parser->first_packet = false;
+    /* Increment it, but what will happen to previous_packet? i need some
+     * explicit check here */
+    // ++parser->current_packet;
   }
   /* write received chunk to update sector */
   if (!update_packet_flash_write_chunk(
           UPDATE_STORAGE_START_ADDR + parser->write_idx,
-          (const uint8_t *)parser->buffer, payload_size)) {
+          (const uint8_t *)(parser->buffer + UPDATE_PACKET_HEADER_SIZE),
+          payload_size)) {
     parser->tx_cb(&_NACK);
     reset_buffer(parser);
 
@@ -181,6 +212,9 @@ bool update_packet_parser_parse_and_process(
   }
 
   parser->write_idx += payload_size;
+
+  /* everything ok now i can set the previous chunk counter to current one */
+  parser->previous_counter = parser->current_counter;
   reset_buffer(parser);
   parser->tx_cb(&_ACK);
 
@@ -233,7 +267,7 @@ void update_packet_parser_tim_callback(struct update_packet_parser_t *parser,
   if (htim->Instance == parser->tim->Instance) {
     HAL_TIM_Base_Stop_IT(parser->tim);
     if (parser->idx > UPDATE_PACKET_OVERHEAD_SIZE) {
-
+      // custom_logger_log("Received chunk size: %d", parser->idx);
       parser->rx_done = true;
     } else {
       parser->tx_cb(&_NACK);
